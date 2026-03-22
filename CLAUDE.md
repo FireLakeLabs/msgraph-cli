@@ -1,0 +1,103 @@
+# CLAUDE.md — msgraph-cli
+
+## What This Is
+
+A CLI tool for interacting with Microsoft 365 via the Microsoft Graph API. Designed for unattended agent use (NetClaw, Claude Code, etc.) with JSON output and secure 1Password-backed credential storage.
+
+## Quick Reference
+
+```bash
+# Build
+dotnet build
+
+# Test
+dotnet test
+
+# Run
+dotnet run --project src/MsGraphCli -- --help
+dotnet run --project src/MsGraphCli -- auth status --json
+dotnet run --project src/MsGraphCli -- mail list --json --max 10
+
+# Publish single binary (linux-x64)
+dotnet publish src/MsGraphCli -c Release -r linux-x64 --self-contained -o ./publish
+```
+
+## Architecture
+
+Three-layer design. CLI depends on Core. Core has zero dependency on CLI.
+
+```
+CLI (MsGraphCli)           → Thin shell: parse args, call service, format output
+Core (MsGraphCli.Core)     → All business logic: services, auth, Graph client, models
+Tests (MsGraphCli.Tests)   → xUnit, mocked Graph client and 1Password
+```
+
+### Project Layout
+
+```
+src/MsGraphCli/              CLI entry point
+  Commands/                  System.CommandLine command definitions
+  Output/                    IOutputFormatter implementations (JSON, table, plain)
+  Program.cs                 Root command + global options
+  GlobalOptions.cs           Shared option references
+
+src/MsGraphCli.Core/         Library (future NuGet extraction target)
+  Auth/                      ISecretStore, OnePasswordSecretStore, GraphAuthProvider,
+                             TokenCacheHelper, ScopeRegistry
+  Config/                    AppConfig, ConfigLoader
+  Exceptions/                Typed exceptions with exit codes
+  Graph/                     GraphClientFactory, MsalAccessTokenProvider
+  Models/                    Record DTOs (MailMessageSummary, etc.)
+  Services/                  IMailService, MailService, etc.
+
+src/MsGraphCli.Tests/        Test project
+  Unit/                      Mocked tests
+  Integration/               Live API tests (gated by MSGRAPH_LIVE=1)
+```
+
+### Key Patterns
+
+- **System.CommandLine 2.0.5 stable API:** Commands use `SetAction(async (parseResult, ct) => { ... })`. Options are read via `parseResult.GetValue(option)`.
+- **Interface-first in Core:** Every service has an interface for testability.
+- **Output formatting:** Commands produce DTOs. The `IOutputFormatter` (JSON/table/plain) handles rendering. Commands never write data directly to stdout — they go through the formatter.
+- **Data to stdout, diagnostics to stderr.** Always.
+- **Errors:** Core throws typed `MsGraphCliException` subclasses. CLI middleware maps them to exit codes + formatted error output.
+
+### Auth Flow
+
+1. `ISecretStore` (backed by 1Password CLI) stores: client ID, tenant ID, serialized MSAL token cache.
+2. `GraphAuthProvider` builds MSAL `PublicClientApplication`, registers cache callbacks that read/write via `ISecretStore`.
+3. `GraphClientFactory` creates `GraphServiceClient` using `MsalAccessTokenProvider` (implements `IAccessTokenProvider` from Kiota).
+4. Services receive `GraphServiceClient` and make API calls.
+
+### 1Password Integration
+
+All `op` CLI calls go through `ISecretStore` → `OnePasswordSecretStore`. Never call `op` directly.
+
+Vault: `msgraph-cli` (configurable). Items:
+- `app-registration` — fields: `client-id`, `tenant-id`
+- `msal-token-cache` — field: `notesPlain` (Base64-encoded MSAL V3 cache blob)
+
+## Code Conventions
+
+- **.NET 10**, C# latest, nullable enabled, implicit usings.
+- **File-scoped namespaces.**
+- **Records for DTOs.** Models returned from services are `record` types.
+- **Async all the way.** Use `CancellationToken` on all async methods.
+- **TreatWarningsAsErrors** is on. Fix all warnings before committing.
+
+## Testing
+
+- **Unit tests:** Mock `ISecretStore` using `InMemorySecretStore` (already in tests). Mock Graph via `HttpMessageHandler`.
+- **Integration tests:** Gated behind `MSGRAPH_LIVE=1`. Require authenticated 1Password session.
+- **Test runner:** `dotnet test` from the repo root.
+
+## What NOT to Do
+
+- Don't add a GUI, web server, or MCP server mode.
+- Don't add multi-user or multi-tenant support.
+- Don't store secrets anywhere except 1Password.
+- Don't bypass `ISecretStore` to call `op` directly.
+- Don't write data to stdout from anywhere except `IOutputFormatter`.
+- Don't add Teams commands (explicitly deferred).
+- Don't use `var` when the type isn't obvious from the right-hand side.

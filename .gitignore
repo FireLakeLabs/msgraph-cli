@@ -52,3 +52,23 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+launchSettings.json
+
+## OS
+.DS_Store
+Thumbs.db
+
+## 1Password (never commit secrets)
+*.1pux
+
+## Test results
+TestResults/
+coverage/
