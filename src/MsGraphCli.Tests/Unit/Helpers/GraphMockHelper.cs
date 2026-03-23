@@ -28,6 +28,18 @@ internal sealed class MockGraphHandler : HttpMessageHandler
         _responses.Enqueue(new HttpResponseMessage(statusCode));
     }
 
+    public void EnqueueBytes(byte[] data, string contentType = "application/octet-stream",
+        HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        _responses.Enqueue(new HttpResponseMessage(statusCode)
+        {
+            Content = new ByteArrayContent(data)
+            {
+                Headers = { { "Content-Type", contentType } },
+            },
+        });
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {

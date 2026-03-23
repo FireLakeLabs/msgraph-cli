@@ -249,9 +249,10 @@ public sealed class TableOutputFormatter : IOutputFormatter
         {
             string size = item.IsFolder ? "—" : item.Size switch
             {
+                null => "—",
                 >= 1024 * 1024 => $"{item.Size / (1024.0 * 1024.0):F1} MB",
                 >= 1024 => $"{item.Size / 1024.0:F1} KB",
-                _ => $"{item.Size?.ToString(CultureInfo.InvariantCulture) ?? "—"} B",
+                _ => $"{item.Size?.ToString(CultureInfo.InvariantCulture)} B",
             };
 
             string modified = item.LastModified?.LocalDateTime

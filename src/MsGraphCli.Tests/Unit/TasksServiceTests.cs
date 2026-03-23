@@ -175,7 +175,7 @@ public class TasksServiceTests
         result[0].Id.Should().Be("task-1");
         result[0].Title.Should().Be("Buy groceries");
         result[0].Body.Should().Be("Milk, eggs, bread");
-        result[0].Status.Should().Be("NotStarted");
+        result[0].Status.Should().Be("notStarted");
         result[0].DueDate.Should().NotBeNull();
         result[0].Importance.Should().Be("high");
         result[0].Created.Should().NotBeNull();
@@ -308,7 +308,7 @@ public class TasksServiceTests
 
         handler.LastRequest.Method.Should().Be(HttpMethod.Patch);
         handler.LastRequest.Body.Should().Contain("completed");
-        result.Status.Should().Be("Completed");
+        result.Status.Should().Be("completed");
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class TasksServiceTests
 
         handler.LastRequest.Method.Should().Be(HttpMethod.Patch);
         handler.LastRequest.Body.Should().Contain("notStarted");
-        result.Status.Should().Be("NotStarted");
+        result.Status.Should().Be("notStarted");
     }
 
     // ── DeleteTaskAsync ──

@@ -71,6 +71,13 @@ public static class DriveCommands
             string? folderId = parseResult.GetValue(folderOption);
             int? max = parseResult.GetValue(maxOption);
 
+            if (path is not null && folderId is not null)
+            {
+                throw new MsGraphCli.Core.Exceptions.MsGraphCliException(
+                    "Cannot specify both --path and --folder. Use one or the other.",
+                    "InvalidArgument", exitCode: 1);
+            }
+
             IReadOnlyList<DriveItemSummary> items = await service.ListChildrenAsync(folderId, path, max, cancellationToken);
 
             bool isJson = parseResult.GetValue(global.Json);

@@ -226,6 +226,44 @@ public class DriveServiceTests
         ex.ErrorCode.Should().Be("InvalidArgument");
     }
 
+    [Fact]
+    public async Task Download_ById_WritesFileToOutputPath()
+    {
+        byte[] fileContent = "hello world"u8.ToArray();
+        string outputPath = Path.Combine(Path.GetTempPath(), $"drive-test-{Guid.NewGuid()}.txt");
+
+        try
+        {
+            var handler = new MockGraphHandler();
+            handler.Enqueue("""{"id": "test-drive-id"}""");
+            handler.Enqueue("""
+            {
+                "id": "item-dl",
+                "name": "hello.txt",
+                "size": 11,
+                "lastModifiedDateTime": "2025-06-15T10:30:00Z"
+            }
+            """);
+            handler.EnqueueBytes(fileContent);
+            DriveService svc = CreateService(handler);
+
+            DriveItemSummary result = await svc.DownloadAsync("item-dl", null, outputPath, CancellationToken.None);
+
+            result.Id.Should().Be("item-dl");
+            result.Name.Should().Be("hello.txt");
+            File.Exists(outputPath).Should().BeTrue();
+            byte[] written = await File.ReadAllBytesAsync(outputPath);
+            written.Should().BeEquivalentTo(fileContent);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+
     // ── UploadAsync ──
 
     [Fact]
@@ -308,6 +346,49 @@ public class DriveServiceTests
         path.Should().Contain("/Documents");
         path.Should().Contain("/children");
         result.Name.Should().Be("SubFolder");
+    }
+
+    // ── MoveAsync ──
+
+    [Fact]
+    public async Task Move_ResolvesDestinationAndPatchesParentReference()
+    {
+        var handler = new MockGraphHandler();
+        handler.Enqueue("""{"id": "test-drive-id"}""");
+        // GET destination folder
+        handler.Enqueue("""
+        {
+            "id": "dest-folder-id",
+            "name": "Archive",
+            "folder": { "childCount": 5 },
+            "lastModifiedDateTime": "2025-06-15T10:30:00Z"
+        }
+        """);
+        // PATCH move result
+        handler.Enqueue("""
+        {
+            "id": "item-to-move",
+            "name": "report.docx",
+            "size": 5000,
+            "lastModifiedDateTime": "2025-06-15T10:30:00Z"
+        }
+        """);
+        DriveService svc = CreateService(handler);
+
+        DriveItemSummary result = await svc.MoveAsync("item-to-move", "/Archive", CancellationToken.None);
+
+        // Request 1: GET drive ID
+        // Request 2: GET destination folder by path
+        string destPath = Uri.UnescapeDataString(handler.Requests[1].Uri.AbsolutePath);
+        destPath.Should().Contain("/Archive");
+
+        // Request 3: PATCH item with parentReference
+        handler.Requests[2].Method.Should().Be(HttpMethod.Patch);
+        handler.Requests[2].Uri.AbsolutePath.Should().Contain("/items/item-to-move");
+        handler.Requests[2].Body.Should().Contain("dest-folder-id");
+
+        result.Id.Should().Be("item-to-move");
+        result.Name.Should().Be("report.docx");
     }
 
     // ── RenameAsync ──

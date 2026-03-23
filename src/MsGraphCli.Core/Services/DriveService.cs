@@ -201,6 +201,13 @@ public sealed class DriveService : IDriveService
             UploadSession? uploadSession = await _client.Drives[driveId].Root.ItemWithPath(remotePath)
                 .CreateUploadSession.PostAsync(requestBody, cancellationToken: cancellationToken);
 
+            if (uploadSession is null)
+            {
+                throw new Exceptions.MsGraphCliException(
+                    $"Failed to create upload session for '{remotePath}'.",
+                    "UploadSessionFailed", exitCode: 1);
+            }
+
             await using FileStream fileStream = File.OpenRead(localPath);
             LargeFileUploadTask<DriveItem> uploadTask = new(uploadSession, fileStream, 320 * 1024);
             UploadResult<DriveItem> uploadResult = await uploadTask.UploadAsync(cancellationToken: cancellationToken);

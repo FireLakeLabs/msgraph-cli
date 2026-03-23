@@ -248,7 +248,7 @@ public sealed class TasksService : ITasksService
         Id: task.Id ?? "",
         Title: task.Title ?? "",
         Body: task.Body?.Content,
-        Status: task.Status?.ToString() ?? "notStarted",
+        Status: NormalizeStatus(task.Status),
         DueDate: ParseGraphDateTime(task.DueDateTime),
         CompletedDate: ParseGraphDateTime(task.CompletedDateTime),
         Created: task.CreatedDateTime,
@@ -270,6 +270,19 @@ public sealed class TasksService : ITasksService
         }
 
         return null;
+    }
+
+    private static string NormalizeStatus(Microsoft.Graph.Models.TaskStatus? status)
+    {
+        return status switch
+        {
+            Microsoft.Graph.Models.TaskStatus.Completed => "completed",
+            Microsoft.Graph.Models.TaskStatus.InProgress => "inProgress",
+            Microsoft.Graph.Models.TaskStatus.NotStarted => "notStarted",
+            Microsoft.Graph.Models.TaskStatus.WaitingOnOthers => "waitingOnOthers",
+            Microsoft.Graph.Models.TaskStatus.Deferred => "deferred",
+            _ => "notStarted",
+        };
     }
 
     private static Importance ParseImportance(string value)
