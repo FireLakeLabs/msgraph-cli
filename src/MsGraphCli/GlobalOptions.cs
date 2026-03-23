@@ -10,5 +10,6 @@ public sealed record GlobalOptions(
     Option<bool> Plain,
     Option<bool> Verbose,
     Option<bool> Beta,
-    Option<bool> ReadOnly
+    Option<bool> ReadOnly,
+    Option<bool> DryRun
 );

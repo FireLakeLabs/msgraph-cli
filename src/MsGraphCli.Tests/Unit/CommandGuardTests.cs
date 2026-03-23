@@ -18,6 +18,17 @@ public class CommandGuardTests
     [InlineData("calendar update")]
     [InlineData("calendar delete")]
     [InlineData("calendar respond")]
+    [InlineData("drive upload")]
+    [InlineData("drive mkdir")]
+    [InlineData("drive move")]
+    [InlineData("drive rename")]
+    [InlineData("drive delete")]
+    [InlineData("todo lists create")]
+    [InlineData("todo add")]
+    [InlineData("todo update")]
+    [InlineData("todo done")]
+    [InlineData("todo undo")]
+    [InlineData("todo delete")]
     public void EnforceReadOnly_WriteCommand_WhenReadOnly_Throws(string commandPath)
     {
         Action act = () => CommandGuard.EnforceReadOnly(commandPath, readOnlyFlag: true);
@@ -34,6 +45,13 @@ public class CommandGuardTests
     [InlineData("calendar events")]
     [InlineData("calendar get")]
     [InlineData("auth status")]
+    [InlineData("drive ls")]
+    [InlineData("drive search")]
+    [InlineData("drive get")]
+    [InlineData("drive download")]
+    [InlineData("todo lists")]
+    [InlineData("todo list")]
+    [InlineData("todo get")]
     public void EnforceReadOnly_ReadCommand_WhenReadOnly_DoesNotThrow(string commandPath)
     {
         Action act = () => CommandGuard.EnforceReadOnly(commandPath, readOnlyFlag: true);
