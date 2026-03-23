@@ -12,7 +12,9 @@ Phase 2 (mail write + calendar CRUD) is complete with full test coverage. Phase 
 
 - **No `--progress` flag** for uploads in this phase. The CLI is primarily agent-consumed; progress bars aren't useful for JSON consumers.
 - **`--dry-run` applies to all write operations** across both Drive and Todo commands for consistent behavior.
-- **Model naming**: Use `TaskListInfo` and `TodoTaskItem` to avoid collision with `System.Threading.Tasks.Task` and `System.Collections.Generic.List`.
+- **Model naming**: Use `TaskListInfo` and `TodoTaskItem` to avoid collision with `System.Threading.Tasks.Task` and `System.Collections.Generic.List`. (PRD uses `TaskList`/`TodoTask` — update PRD to match after implementation.)
+- **`--dry-run` excludes `download`** — download only reads from Graph API; the local file write is not a Graph write operation.
+- **Scopes already registered** — `ScopeRegistry` already has `drive` (Files.Read/ReadWrite) and `todo` (Tasks.Read/ReadWrite) entries from Phase 1. No changes needed.
 
 ## Architecture
 
@@ -32,7 +34,7 @@ TasksCommands.cs  →  ITasksService / TasksService  →  GraphServiceClient
 | `ListChildrenAsync` | `folderId?`, `path?`, `max?`, `ct` | `IReadOnlyList<DriveItemSummary>` | `GET /me/drive/root/children`, `/items/{id}/children`, or `/root:/{path}:/children` |
 | `SearchAsync` | `query`, `max?`, `ct` | `IReadOnlyList<DriveItemSummary>` | `GET /me/drive/root/search(q='...')` |
 | `GetItemAsync` | `itemId`, `ct` | `DriveItemDetail` | `GET /me/drive/items/{id}` |
-| `DownloadAsync` | `itemId?`, `path?`, `ct` | `(Stream Content, string FileName)` | `GET /me/drive/items/{id}/content` or `/root:/{path}:/content` |
+| `DownloadAsync` | `itemId?`, `path?`, `outputPath`, `ct` | `DriveItemSummary` | `GET /me/drive/items/{id}/content` or `/root:/{path}:/content` |
 | `UploadAsync` | `localPath`, `remotePath`, `ct` | `DriveItemSummary` | Simple PUT ≤4MB, `createUploadSession` >4MB |
 | `CreateFolderAsync` | `name`, `parentPath?`, `ct` | `DriveItemSummary` | `POST /me/drive/root/children` |
 | `MoveAsync` | `itemId`, `destinationPath`, `ct` | `DriveItemSummary` | `PATCH /me/drive/items/{id}` (parentReference) |
@@ -42,8 +44,15 @@ TasksCommands.cs  →  ITasksService / TasksService  →  GraphServiceClient
 ### Upload Strategy
 
 - Files ≤ 4MB: simple `PUT /me/drive/root:/{path}:/content` with file bytes
-- Files > 4MB: `POST .../createUploadSession` → `LargeFileUploadTask` from the Graph SDK
+- Files > 4MB: `POST /me/drive/root:/{path}:/createUploadSession` → `LargeFileUploadTask` from the Graph SDK
 - Auto-detected based on `FileInfo.Length`
+- Upload session failures are not retried in this phase; the operation fails with an appropriate error
+
+### Download Strategy
+
+- `DownloadAsync` accepts `outputPath` and writes the stream to disk internally, handling disposal
+- Exactly one of `itemId` or `path` must be provided (validated in the service layer)
+- Returns `DriveItemSummary` of the downloaded item for confirmation output
 
 ### Path Resolution
 
@@ -57,7 +66,7 @@ TasksCommands.cs  →  ITasksService / TasksService  →  GraphServiceClient
 
 | Method | Parameters | Returns | Graph Endpoint |
 |---|---|---|---|
-| `ListTaskListsAsync` | `ct` | `IReadOnlyList<TaskListInfo>` | `GET /me/todo/lists` |
+| `ListTaskListsAsync` | `max?`, `ct` | `IReadOnlyList<TaskListInfo>` | `GET /me/todo/lists` |
 | `CreateTaskListAsync` | `displayName`, `ct` | `TaskListInfo` | `POST /me/todo/lists` |
 | `ListTasksAsync` | `listId`, `status?`, `max?`, `ct` | `IReadOnlyList<TodoTaskItem>` | `GET /me/todo/lists/{id}/tasks` with optional `$filter` |
 | `GetTaskAsync` | `listId`, `taskId`, `ct` | `TodoTaskItem` | `GET /me/todo/lists/{id}/tasks/{taskId}` |
@@ -179,7 +188,7 @@ New write commands added to read-only enforcement:
 |---|---|
 | `src/MsGraphCli/Program.cs` | Register drive + todo command groups |
 | `src/MsGraphCli/GlobalOptions.cs` | Add `DryRun` option |
-| `src/MsGraphCli/Output/OutputFormatters.cs` | Add WriteDriveItemTable, WriteTaskListTable, WriteTodoTaskTable |
+| `src/MsGraphCli/Output/OutputFormatters.cs` | Add WriteDriveItemTable, WriteDriveItemDetailTable, WriteTaskListTable, WriteTodoTaskTable |
 | `src/MsGraphCli/Middleware/CommandGuard.cs` | Extend WriteCommands set |
 | `src/MsGraphCli.Tests/Unit/CommandGuardTests.cs` | Add test cases for new write commands |
 
