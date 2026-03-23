@@ -236,6 +236,138 @@ public sealed class TableOutputFormatter : IOutputFormatter
         AnsiConsole.Write(table);
     }
 
+    public static void WriteDriveItemTable(IReadOnlyList<MsGraphCli.Core.Models.DriveItemSummary> items)
+    {
+        var table = new Table();
+        table.AddColumn("NAME");
+        table.AddColumn(new TableColumn("SIZE").RightAligned());
+        table.AddColumn("MODIFIED");
+        table.AddColumn("TYPE");
+        table.AddColumn("ID");
+
+        foreach (var item in items)
+        {
+            string size = item.IsFolder ? "—" : item.Size switch
+            {
+                >= 1024 * 1024 => $"{item.Size / (1024.0 * 1024.0):F1} MB",
+                >= 1024 => $"{item.Size / 1024.0:F1} KB",
+                _ => $"{item.Size?.ToString(CultureInfo.InvariantCulture) ?? "—"} B",
+            };
+
+            string modified = item.LastModified?.LocalDateTime
+                .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "—";
+
+            string type = item.IsFolder
+                ? "[blue]folder[/]"
+                : Markup.Escape(item.MimeType ?? "file");
+
+            table.AddRow(
+                Markup.Escape(Truncate(item.Name, 40)),
+                size,
+                modified,
+                type,
+                Markup.Escape(Truncate(item.Id, 40))
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteDriveItemDetailTable(MsGraphCli.Core.Models.DriveItemDetail item)
+    {
+        string type = item.IsFolder ? "folder" : item.MimeType ?? "file";
+
+        string size;
+        if (item.IsFolder)
+        {
+            size = "—";
+        }
+        else
+        {
+            size = item.Size switch
+            {
+                >= 1024 * 1024 => $"{item.Size / (1024.0 * 1024.0):F1} MB",
+                >= 1024 => $"{item.Size / 1024.0:F1} KB",
+                _ => $"{item.Size?.ToString(CultureInfo.InvariantCulture) ?? "—"} B",
+            };
+        }
+
+        string created = item.Created?.LocalDateTime
+            .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "—";
+        string modified = item.LastModified?.LocalDateTime
+            .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "—";
+
+        Console.WriteLine($"Name:      {item.Name}");
+        Console.WriteLine($"Type:      {type}");
+        Console.WriteLine($"Size:      {size}");
+        Console.WriteLine($"Created:   {created}");
+        Console.WriteLine($"Modified:  {modified}");
+        Console.WriteLine($"Path:      {item.ParentPath ?? "—"}");
+        Console.WriteLine($"Web URL:   {item.WebUrl ?? "—"}");
+        Console.WriteLine($"ID:        {item.Id}");
+    }
+
+    public static void WriteTaskListTable(IReadOnlyList<MsGraphCli.Core.Models.TaskListInfo> lists)
+    {
+        var table = new Table();
+        table.AddColumn("NAME");
+        table.AddColumn("DEFAULT");
+        table.AddColumn("ID");
+
+        foreach (var list in lists)
+        {
+            table.AddRow(
+                Markup.Escape(list.DisplayName),
+                list.IsDefaultList ? "[green]yes[/]" : "",
+                Markup.Escape(Truncate(list.Id, 40))
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteTodoTaskTable(IReadOnlyList<MsGraphCli.Core.Models.TodoTaskItem> tasks)
+    {
+        var table = new Table();
+        table.AddColumn("TITLE");
+        table.AddColumn("STATUS");
+        table.AddColumn("DUE");
+        table.AddColumn("IMPORTANCE");
+        table.AddColumn("ID");
+
+        foreach (var task in tasks)
+        {
+            string status = task.Status switch
+            {
+                "completed" => "[green]completed[/]",
+                "inProgress" => "[yellow]inProgress[/]",
+                "notStarted" => "[red]notStarted[/]",
+                _ => Markup.Escape(task.Status),
+            };
+
+            string due = task.DueDate?.LocalDateTime
+                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—";
+
+            string importance = task.Importance switch
+            {
+                "high" => "[red]high[/]",
+                "normal" => "[yellow]normal[/]",
+                "low" => "[dim]low[/]",
+                _ => Markup.Escape(task.Importance),
+            };
+
+            table.AddRow(
+                Markup.Escape(Truncate(task.Title, 40)),
+                status,
+                due,
+                importance,
+                Markup.Escape(Truncate(task.Id, 40))
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
     private static string Truncate(string value, int maxLength) =>
         value.Length <= maxLength ? value : string.Concat(value.AsSpan(0, maxLength - 1), "…");
 }
