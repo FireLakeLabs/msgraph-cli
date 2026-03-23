@@ -7,15 +7,15 @@ namespace MsGraphCli.Core.Services;
 
 public interface IDriveService
 {
-    Task<IReadOnlyList<DriveItemSummary>> ListChildrenAsync(string? folderId, string? path, int? max, CancellationToken ct);
-    Task<IReadOnlyList<DriveItemSummary>> SearchAsync(string query, int? max, CancellationToken ct);
-    Task<DriveItemDetail> GetItemAsync(string itemId, CancellationToken ct);
-    Task<DriveItemSummary> DownloadAsync(string? itemId, string? path, string outputPath, CancellationToken ct);
-    Task<DriveItemSummary> UploadAsync(string localPath, string remotePath, CancellationToken ct);
-    Task<DriveItemSummary> CreateFolderAsync(string name, string? parentPath, CancellationToken ct);
-    Task<DriveItemSummary> MoveAsync(string itemId, string destinationPath, CancellationToken ct);
-    Task<DriveItemSummary> RenameAsync(string itemId, string newName, CancellationToken ct);
-    Task DeleteAsync(string itemId, CancellationToken ct);
+    Task<IReadOnlyList<DriveItemSummary>> ListChildrenAsync(string? folderId, string? path, int? max, CancellationToken cancellationToken);
+    Task<IReadOnlyList<DriveItemSummary>> SearchAsync(string query, int? max, CancellationToken cancellationToken);
+    Task<DriveItemDetail> GetItemAsync(string itemId, CancellationToken cancellationToken);
+    Task<DriveItemSummary> DownloadAsync(string? itemId, string? path, string outputPath, CancellationToken cancellationToken);
+    Task<DriveItemSummary> UploadAsync(string localPath, string remotePath, CancellationToken cancellationToken);
+    Task<DriveItemSummary> CreateFolderAsync(string name, string? parentPath, CancellationToken cancellationToken);
+    Task<DriveItemSummary> MoveAsync(string itemId, string destinationPath, CancellationToken cancellationToken);
+    Task<DriveItemSummary> RenameAsync(string itemId, string newName, CancellationToken cancellationToken);
+    Task DeleteAsync(string itemId, CancellationToken cancellationToken);
 }
 
 public sealed class DriveService : IDriveService
@@ -25,16 +25,19 @@ public sealed class DriveService : IDriveService
 
     private const int MaxSmallFileSize = 4 * 1024 * 1024;
 
+    private static readonly string[] ItemSelect = ["id", "name", "file", "size", "lastModifiedDateTime", "folder", "webUrl"];
+    private static readonly string[] ItemDetailSelect = ["id", "name", "file", "size", "createdDateTime", "lastModifiedDateTime", "folder", "webUrl", "parentReference"];
+
     public DriveService(GraphServiceClient client)
     {
         _client = client;
     }
 
-    private async Task<string> GetDriveIdAsync(CancellationToken ct)
+    private async Task<string> GetDriveIdAsync(CancellationToken cancellationToken)
     {
         if (_driveId is null)
         {
-            Microsoft.Graph.Models.Drive? drive = await _client.Me.Drive.GetAsync(cancellationToken: ct);
+            Microsoft.Graph.Models.Drive? drive = await _client.Me.Drive.GetAsync(cancellationToken: cancellationToken);
             _driveId = drive?.Id ?? throw new Exceptions.MsGraphCliException(
                 "Could not retrieve user's drive.", "DriveNotFound", exitCode: 1);
         }
@@ -42,10 +45,10 @@ public sealed class DriveService : IDriveService
     }
 
     public async Task<IReadOnlyList<DriveItemSummary>> ListChildrenAsync(
-        string? folderId, string? path, int? max, CancellationToken ct)
+        string? folderId, string? path, int? max, CancellationToken cancellationToken)
     {
         int top = max ?? 50;
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
 
         DriveItemCollectionResponse? response;
 
@@ -55,7 +58,8 @@ public sealed class DriveService : IDriveService
                 .GetAsync(config =>
                 {
                     config.QueryParameters.Top = top;
-                }, ct);
+                    config.QueryParameters.Select = ItemSelect;
+                }, cancellationToken);
         }
         else if (!string.IsNullOrEmpty(path))
         {
@@ -63,7 +67,8 @@ public sealed class DriveService : IDriveService
                 .GetAsync(config =>
                 {
                     config.QueryParameters.Top = top;
-                }, ct);
+                    config.QueryParameters.Select = ItemSelect;
+                }, cancellationToken);
         }
         else
         {
@@ -71,30 +76,35 @@ public sealed class DriveService : IDriveService
                 .GetAsync(config =>
                 {
                     config.QueryParameters.Top = top;
-                }, ct);
+                    config.QueryParameters.Select = ItemSelect;
+                }, cancellationToken);
         }
 
         return MapSummaries(response?.Value);
     }
 
-    public async Task<IReadOnlyList<DriveItemSummary>> SearchAsync(string query, int? max, CancellationToken ct)
+    public async Task<IReadOnlyList<DriveItemSummary>> SearchAsync(string query, int? max, CancellationToken cancellationToken)
     {
         int top = max ?? 25;
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
 
         var response = await _client.Drives[driveId].SearchWithQ(query)
             .GetAsSearchWithQGetResponseAsync(config =>
             {
                 config.QueryParameters.Top = top;
-            }, ct);
+                config.QueryParameters.Select = ItemSelect;
+            }, cancellationToken);
 
         return MapSummaries(response?.Value);
     }
 
-    public async Task<DriveItemDetail> GetItemAsync(string itemId, CancellationToken ct)
+    public async Task<DriveItemDetail> GetItemAsync(string itemId, CancellationToken cancellationToken)
     {
-        string driveId = await GetDriveIdAsync(ct);
-        DriveItem? item = await _client.Drives[driveId].Items[itemId].GetAsync(cancellationToken: ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
+        DriveItem? item = await _client.Drives[driveId].Items[itemId].GetAsync(config =>
+        {
+            config.QueryParameters.Select = ItemDetailSelect;
+        }, cancellationToken);
 
         if (item is null)
         {
@@ -104,7 +114,7 @@ public sealed class DriveService : IDriveService
         return MapDetail(item);
     }
 
-    public async Task<DriveItemSummary> DownloadAsync(string? itemId, string? path, string outputPath, CancellationToken ct)
+    public async Task<DriveItemSummary> DownloadAsync(string? itemId, string? path, string outputPath, CancellationToken cancellationToken)
     {
         bool hasId = !string.IsNullOrEmpty(itemId);
         bool hasPath = !string.IsNullOrEmpty(path);
@@ -116,27 +126,27 @@ public sealed class DriveService : IDriveService
                 "InvalidArgument", exitCode: 1);
         }
 
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
         DriveItem? item;
         Stream? content;
 
         if (hasId)
         {
-            item = await _client.Drives[driveId].Items[itemId!].GetAsync(cancellationToken: ct);
+            item = await _client.Drives[driveId].Items[itemId!].GetAsync(cancellationToken: cancellationToken);
             if (item is null)
             {
                 throw new Exceptions.ResourceNotFoundException($"Drive item '{itemId}' not found.");
             }
-            content = await _client.Drives[driveId].Items[itemId!].Content.GetAsync(cancellationToken: ct);
+            content = await _client.Drives[driveId].Items[itemId!].Content.GetAsync(cancellationToken: cancellationToken);
         }
         else
         {
-            item = await _client.Drives[driveId].Root.ItemWithPath(path!).GetAsync(cancellationToken: ct);
+            item = await _client.Drives[driveId].Root.ItemWithPath(path!).GetAsync(cancellationToken: cancellationToken);
             if (item is null)
             {
                 throw new Exceptions.ResourceNotFoundException($"Drive item at path '{path}' not found.");
             }
-            content = await _client.Drives[driveId].Root.ItemWithPath(path!).Content.GetAsync(cancellationToken: ct);
+            content = await _client.Drives[driveId].Root.ItemWithPath(path!).Content.GetAsync(cancellationToken: cancellationToken);
         }
 
         if (content is null)
@@ -149,22 +159,22 @@ public sealed class DriveService : IDriveService
         using (content)
         {
             await using FileStream fileStream = File.Create(outputPath);
-            await content.CopyToAsync(fileStream, ct);
+            await content.CopyToAsync(fileStream, cancellationToken);
         }
 
         return MapSummary(item);
     }
 
-    public async Task<DriveItemSummary> UploadAsync(string localPath, string remotePath, CancellationToken ct)
+    public async Task<DriveItemSummary> UploadAsync(string localPath, string remotePath, CancellationToken cancellationToken)
     {
         long fileSize = new FileInfo(localPath).Length;
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
 
         if (fileSize <= MaxSmallFileSize)
         {
             await using FileStream fileStream = File.OpenRead(localPath);
             DriveItem? uploaded = await _client.Drives[driveId].Root.ItemWithPath(remotePath).Content
-                .PutAsync(fileStream, cancellationToken: ct);
+                .PutAsync(fileStream, cancellationToken: cancellationToken);
 
             if (uploaded is null)
             {
@@ -189,11 +199,11 @@ public sealed class DriveService : IDriveService
             };
 
             UploadSession? uploadSession = await _client.Drives[driveId].Root.ItemWithPath(remotePath)
-                .CreateUploadSession.PostAsync(requestBody, cancellationToken: ct);
+                .CreateUploadSession.PostAsync(requestBody, cancellationToken: cancellationToken);
 
             await using FileStream fileStream = File.OpenRead(localPath);
             LargeFileUploadTask<DriveItem> uploadTask = new(uploadSession, fileStream, 320 * 1024);
-            UploadResult<DriveItem> uploadResult = await uploadTask.UploadAsync(cancellationToken: ct);
+            UploadResult<DriveItem> uploadResult = await uploadTask.UploadAsync(cancellationToken: cancellationToken);
 
             DriveItem? resultItem = uploadResult.ItemResponse;
 
@@ -208,9 +218,9 @@ public sealed class DriveService : IDriveService
         }
     }
 
-    public async Task<DriveItemSummary> CreateFolderAsync(string name, string? parentPath, CancellationToken ct)
+    public async Task<DriveItemSummary> CreateFolderAsync(string name, string? parentPath, CancellationToken cancellationToken)
     {
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
         DriveItem? folder;
 
         if (!string.IsNullOrEmpty(parentPath))
@@ -219,7 +229,7 @@ public sealed class DriveService : IDriveService
             {
                 Name = name,
                 Folder = new Folder(),
-            }, cancellationToken: ct);
+            }, cancellationToken: cancellationToken);
         }
         else
         {
@@ -227,7 +237,7 @@ public sealed class DriveService : IDriveService
             {
                 Name = name,
                 Folder = new Folder(),
-            }, cancellationToken: ct);
+            }, cancellationToken: cancellationToken);
         }
 
         if (folder is null)
@@ -240,10 +250,10 @@ public sealed class DriveService : IDriveService
         return MapSummary(folder);
     }
 
-    public async Task<DriveItemSummary> MoveAsync(string itemId, string destinationPath, CancellationToken ct)
+    public async Task<DriveItemSummary> MoveAsync(string itemId, string destinationPath, CancellationToken cancellationToken)
     {
-        string driveId = await GetDriveIdAsync(ct);
-        DriveItem? dest = await _client.Drives[driveId].Root.ItemWithPath(destinationPath).GetAsync(cancellationToken: ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
+        DriveItem? dest = await _client.Drives[driveId].Root.ItemWithPath(destinationPath).GetAsync(cancellationToken: cancellationToken);
 
         if (dest is null)
         {
@@ -253,7 +263,7 @@ public sealed class DriveService : IDriveService
         DriveItem? moved = await _client.Drives[driveId].Items[itemId].PatchAsync(new DriveItem
         {
             ParentReference = new ItemReference { Id = dest.Id },
-        }, cancellationToken: ct);
+        }, cancellationToken: cancellationToken);
 
         if (moved is null)
         {
@@ -265,13 +275,13 @@ public sealed class DriveService : IDriveService
         return MapSummary(moved);
     }
 
-    public async Task<DriveItemSummary> RenameAsync(string itemId, string newName, CancellationToken ct)
+    public async Task<DriveItemSummary> RenameAsync(string itemId, string newName, CancellationToken cancellationToken)
     {
-        string driveId = await GetDriveIdAsync(ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
         DriveItem? renamed = await _client.Drives[driveId].Items[itemId].PatchAsync(new DriveItem
         {
             Name = newName,
-        }, cancellationToken: ct);
+        }, cancellationToken: cancellationToken);
 
         if (renamed is null)
         {
@@ -283,10 +293,10 @@ public sealed class DriveService : IDriveService
         return MapSummary(renamed);
     }
 
-    public async Task DeleteAsync(string itemId, CancellationToken ct)
+    public async Task DeleteAsync(string itemId, CancellationToken cancellationToken)
     {
-        string driveId = await GetDriveIdAsync(ct);
-        await _client.Drives[driveId].Items[itemId].DeleteAsync(cancellationToken: ct);
+        string driveId = await GetDriveIdAsync(cancellationToken);
+        await _client.Drives[driveId].Items[itemId].DeleteAsync(cancellationToken: cancellationToken);
     }
 
     // ── Mapping helpers ──
