@@ -6,19 +6,19 @@ namespace MsGraphCli.Core.Graph;
 
 /// <summary>
 /// Creates authenticated GraphServiceClient instances.
+/// Accepts an HttpClient from the caller to support proper lifecycle management.
 /// </summary>
 public sealed class GraphClientFactory
 {
     private readonly GraphAuthProvider _authProvider;
     private readonly string[] _scopes;
-    private readonly Lazy<HttpClient> _httpClient;
+    private readonly HttpClient _httpClient;
 
-    public GraphClientFactory(GraphAuthProvider authProvider, string[] scopes)
+    public GraphClientFactory(GraphAuthProvider authProvider, string[] scopes, HttpClient httpClient)
     {
         _authProvider = authProvider;
         _scopes = scopes;
-        _httpClient = new Lazy<HttpClient>(() =>
-            new HttpClient(new RetryDelegatingHandler(new HttpClientHandler())));
+        _httpClient = httpClient;
     }
 
     public GraphServiceClient CreateClient()
@@ -26,8 +26,15 @@ public sealed class GraphClientFactory
         var credential = new MsalAccessTokenProvider(_authProvider, _scopes);
         var authProvider = new BaseBearerTokenAuthenticationProvider(credential);
 
-        return new GraphServiceClient(_httpClient.Value, authProvider);
+        return new GraphServiceClient(_httpClient, authProvider);
     }
+
+    /// <summary>
+    /// Creates a default HttpClient with retry handling for use when no
+    /// IHttpClientFactory or DI container is available.
+    /// </summary>
+    public static HttpClient CreateDefaultHttpClient() =>
+        new(new RetryDelegatingHandler(new HttpClientHandler()));
 }
 
 /// <summary>

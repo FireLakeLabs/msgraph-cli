@@ -39,7 +39,8 @@ public static class CalendarCommands
         var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
         string[] scopes = ScopeRegistry.GetScopes(["calendar"], readOnly: readOnly);
-        var factory = new GraphClientFactory(authProvider, scopes);
+        HttpClient httpClient = GraphClientFactory.CreateDefaultHttpClient();
+        var factory = new GraphClientFactory(authProvider, scopes, httpClient);
         var client = factory.CreateClient();
         var service = new CalendarService(client);
 

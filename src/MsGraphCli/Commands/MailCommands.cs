@@ -41,7 +41,8 @@ public static class MailCommands
         var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
         string[] scopes = ScopeRegistry.GetScopes(["mail"], readOnly: readOnly);
-        var factory = new GraphClientFactory(authProvider, scopes);
+        HttpClient httpClient = GraphClientFactory.CreateDefaultHttpClient();
+        var factory = new GraphClientFactory(authProvider, scopes, httpClient);
         var client = factory.CreateClient();
         var service = new MailService(client);
 
