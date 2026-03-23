@@ -32,6 +32,8 @@ public static class Program
         rootCommand.Subcommands.Add(AuthCommands.Build(globalContext));
         rootCommand.Subcommands.Add(MailCommands.Build(globalContext));
         rootCommand.Subcommands.Add(CalendarCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(DriveCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(TasksCommands.Build(globalContext));
 
         // ── Version ──
         var versionCommand = new Command("version", "Show version information");
