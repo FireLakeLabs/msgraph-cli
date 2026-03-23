@@ -56,7 +56,7 @@ public static class CalendarCommands
     {
         var command = new Command("list", "List calendars");
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -106,7 +106,7 @@ public static class CalendarCommands
         command.Options.Add(calendarOption);
         command.Options.Add(maxOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -148,7 +148,7 @@ public static class CalendarCommands
         var command = new Command("get", "Get event details");
         command.Arguments.Add(eventIdArgument);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -212,7 +212,7 @@ public static class CalendarCommands
         command.Options.Add(toOption);
         command.Options.Add(maxOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -448,7 +448,7 @@ public static class CalendarCommands
         command.Options.Add(toOption);
         command.Options.Add(emailsOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 

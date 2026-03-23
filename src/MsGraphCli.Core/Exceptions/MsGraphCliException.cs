@@ -71,3 +71,14 @@ public class CommandNotAllowedException : MsGraphCliException
         CommandName = commandName;
     }
 }
+
+public class ReadOnlyViolationException : MsGraphCliException
+{
+    public string CommandName { get; }
+
+    public ReadOnlyViolationException(string commandName)
+        : base($"Command '{commandName}' is blocked because --readonly mode is enabled.", "ReadOnlyViolation", exitCode: 10)
+    {
+        CommandName = commandName;
+    }
+}

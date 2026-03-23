@@ -50,7 +50,10 @@ public class RetryHandlerTests
     {
         var responses = new[]
         {
-            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
+            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Headers = { RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1)) }
+            },
             new HttpResponseMessage(HttpStatusCode.OK),
         };
 

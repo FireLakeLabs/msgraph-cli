@@ -1,7 +1,5 @@
 using System.CommandLine;
 using MsGraphCli.Commands;
-using MsGraphCli.Core.Exceptions;
-using MsGraphCli.Output;
 
 namespace MsGraphCli;
 
@@ -16,7 +14,7 @@ public static class Program
         var plainOption = new Option<bool>("--plain") { Description = "Output tab-separated values to stdout" };
         var verboseOption = new Option<bool>("--verbose") { Description = "Verbose logging to stderr" };
         var betaOption = new Option<bool>("--beta") { Description = "Use Microsoft Graph beta endpoint" };
-        var readOnlyOption = new Option<bool>("--readonly") { Description = "Block write operations" };
+        var readOnlyOption = new Option<bool>("--read-only") { Description = "Block write operations" };
 
         rootCommand.Options.Add(jsonOption);
         rootCommand.Options.Add(plainOption);

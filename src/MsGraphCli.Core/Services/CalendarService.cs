@@ -116,7 +116,7 @@ public sealed class CalendarService : ICalendarService
 
         if (evt is null)
         {
-            throw new InvalidOperationException($"Event '{eventId}' not found.");
+            throw new Exceptions.ResourceNotFoundException($"Event '{eventId}' not found.");
         }
 
         return MapEventDetail(evt);
@@ -193,7 +193,7 @@ public sealed class CalendarService : ICalendarService
 
         if (created is null)
         {
-            throw new InvalidOperationException("Failed to create event.");
+            throw new Exceptions.MsGraphCliException("Failed to create event.", "CreateFailed", exitCode: 1);
         }
 
         return MapEventDetail(created);
@@ -232,7 +232,7 @@ public sealed class CalendarService : ICalendarService
 
         if (updated is null)
         {
-            throw new InvalidOperationException($"Failed to update event '{eventId}'.");
+            throw new Exceptions.MsGraphCliException($"Failed to update event '{eventId}'.", "UpdateFailed", exitCode: 1);
         }
 
         return MapEventDetail(updated);
@@ -275,7 +275,9 @@ public sealed class CalendarService : ICalendarService
                 break;
 
             default:
-                throw new ArgumentException($"Invalid response '{response}'. Use 'accept', 'decline', or 'tentative'.");
+                throw new Exceptions.MsGraphCliException(
+                    $"Invalid response '{response}'. Use 'accept', 'decline', or 'tentative'.",
+                    "InvalidArgument", exitCode: 1);
         }
     }
 

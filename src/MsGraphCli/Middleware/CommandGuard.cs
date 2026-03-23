@@ -28,7 +28,7 @@ public static class CommandGuard
     {
         if (readOnlyFlag && WriteCommands.Contains(commandPath))
         {
-            throw new CommandNotAllowedException(commandPath);
+            throw new ReadOnlyViolationException(commandPath);
         }
     }
 

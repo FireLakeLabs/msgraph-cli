@@ -44,6 +44,7 @@ public sealed class RetryDelegatingHandler : DelegatingHandler
         }
 
         TimeSpan? retryAfter = response?.Headers.RetryAfter?.Delta;
+        response?.Dispose();
         throw new RateLimitedException(
             $"Request failed after {MaxRetries} retries due to rate limiting.",
             retryAfter);

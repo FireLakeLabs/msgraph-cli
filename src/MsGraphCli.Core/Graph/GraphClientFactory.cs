@@ -11,11 +11,14 @@ public sealed class GraphClientFactory
 {
     private readonly GraphAuthProvider _authProvider;
     private readonly string[] _scopes;
+    private readonly Lazy<HttpClient> _httpClient;
 
     public GraphClientFactory(GraphAuthProvider authProvider, string[] scopes)
     {
         _authProvider = authProvider;
         _scopes = scopes;
+        _httpClient = new Lazy<HttpClient>(() =>
+            new HttpClient(new RetryDelegatingHandler(new HttpClientHandler())));
     }
 
     public GraphServiceClient CreateClient()
@@ -23,10 +26,7 @@ public sealed class GraphClientFactory
         var credential = new MsalAccessTokenProvider(_authProvider, _scopes);
         var authProvider = new BaseBearerTokenAuthenticationProvider(credential);
 
-        var retryHandler = new RetryDelegatingHandler(new HttpClientHandler());
-        var httpClient = new HttpClient(retryHandler);
-
-        return new GraphServiceClient(httpClient, authProvider);
+        return new GraphServiceClient(_httpClient.Value, authProvider);
     }
 }
 

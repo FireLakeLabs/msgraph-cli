@@ -22,7 +22,7 @@ public class CommandGuardTests
     {
         Action act = () => CommandGuard.EnforceReadOnly(commandPath, readOnlyFlag: true);
 
-        act.Should().Throw<CommandNotAllowedException>()
+        act.Should().Throw<ReadOnlyViolationException>()
             .Which.ExitCode.Should().Be(10);
     }
 

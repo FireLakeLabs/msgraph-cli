@@ -88,7 +88,7 @@ public static class MailCommands
         command.Options.Add(folderOption);
         command.Options.Add(maxOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -131,7 +131,7 @@ public static class MailCommands
         command.Arguments.Add(queryArgument);
         command.Options.Add(maxOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -172,7 +172,7 @@ public static class MailCommands
         command.Arguments.Add(messageIdArgument);
         command.Options.Add(formatOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 
@@ -507,7 +507,7 @@ public static class MailCommands
         command.Options.Add(downloadOption);
         command.Options.Add(outDirOption);
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        SetGuardedAction(command, global, async (parseResult, cancellationToken) =>
         {
             var (service, formatter) = CreateServiceContext(parseResult, global);
 

@@ -114,7 +114,7 @@ public sealed class MailService : IMailService
 
         if (message is null)
         {
-            throw new InvalidOperationException($"Message '{messageId}' not found.");
+            throw new Exceptions.ResourceNotFoundException($"Message '{messageId}' not found.");
         }
 
         return new MailMessageDetail(
@@ -185,8 +185,9 @@ public sealed class MailService : IMailService
                 byte[] content = await File.ReadAllBytesAsync(path, cancellationToken);
                 if (content.Length > 3 * 1024 * 1024)
                 {
-                    throw new InvalidOperationException(
-                        $"Attachment '{Path.GetFileName(path)}' exceeds 3 MB limit. Large file upload is not yet supported.");
+                    throw new Exceptions.MsGraphCliException(
+                        $"Attachment '{Path.GetFileName(path)}' exceeds 3 MB limit. Large file upload is not yet supported.",
+                        "AttachmentTooLarge", exitCode: 1);
                 }
 
                 message.Attachments.Add(new FileAttachment
@@ -290,7 +291,9 @@ public sealed class MailService : IMailService
             );
         }
 
-        throw new InvalidOperationException($"Attachment '{attachmentId}' is not a file attachment.");
+        throw new Exceptions.MsGraphCliException(
+            $"Attachment '{attachmentId}' is not a file attachment.",
+            "UnsupportedAttachmentType", exitCode: 1);
     }
 
     private static Recipient ToRecipient(string email) => new()
