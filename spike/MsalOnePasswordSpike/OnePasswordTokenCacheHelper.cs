@@ -9,7 +9,7 @@ namespace MsalOnePasswordSpike;
 /// We Base64-encode it and store it as a 1Password Secure Note.
 /// On each token operation, MSAL calls our callbacks to load/save the cache.
 /// </summary>
-public sealed class OnePasswordTokenCacheHelper
+public sealed class OnePasswordTokenCacheHelper : IDisposable
 {
     private const string CacheItemName = "msal-token-cache";
 
@@ -100,5 +100,10 @@ public sealed class OnePasswordTokenCacheHelper
     {
         await _store.DeleteItemAsync(CacheItemName, ct);
         Console.Error.WriteLine("[TokenCache] Cleared cache from 1Password.");
+    }
+
+    public void Dispose()
+    {
+        _lock.Dispose();
     }
 }

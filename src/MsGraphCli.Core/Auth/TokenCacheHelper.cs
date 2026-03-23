@@ -6,7 +6,7 @@ namespace MsGraphCli.Core.Auth;
 /// Bridges MSAL.NET's token cache to a secret store.
 /// The cache is serialized as a Base64-encoded MSAL V3 blob.
 /// </summary>
-public sealed class TokenCacheHelper
+public sealed class TokenCacheHelper : IDisposable
 {
     private const string CacheItemName = "msal-token-cache";
 
@@ -81,5 +81,10 @@ public sealed class TokenCacheHelper
         {
             _lock.Release();
         }
+    }
+
+    public void Dispose()
+    {
+        _lock.Dispose();
     }
 }

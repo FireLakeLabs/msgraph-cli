@@ -10,10 +10,10 @@ public static class Program
         var rootCommand = new RootCommand("msgraph — Microsoft 365 CLI via Microsoft Graph API");
 
         // ── Global options ──
-        var jsonOption = new Option<bool>("--json", "Output JSON to stdout");
-        var plainOption = new Option<bool>("--plain", "Output tab-separated values to stdout");
-        var verboseOption = new Option<bool>("--verbose", "Verbose logging to stderr");
-        var betaOption = new Option<bool>("--beta", "Use Microsoft Graph beta endpoint");
+        var jsonOption = new Option<bool>("--json") { Description = "Output JSON to stdout" };
+        var plainOption = new Option<bool>("--plain") { Description = "Output tab-separated values to stdout" };
+        var verboseOption = new Option<bool>("--verbose") { Description = "Verbose logging to stderr" };
+        var betaOption = new Option<bool>("--beta") { Description = "Use Microsoft Graph beta endpoint" };
 
         rootCommand.Options.Add(jsonOption);
         rootCommand.Options.Add(plainOption);

@@ -13,18 +13,18 @@ public record AuthStatus(
 /// <summary>
 /// Manages authentication via MSAL, backed by 1Password for token persistence.
 /// </summary>
-public sealed class GraphAuthProvider
+public sealed class GraphAuthProvider : IDisposable
 {
-    private const string AppRegistrationItem = "app-registration";
+    private const string AppRegistrationItem = "ms-graph-app-registration";
 
     private readonly ISecretStore _store;
     private readonly TokenCacheHelper _cacheHelper;
     private IPublicClientApplication? _pca;
 
-    public GraphAuthProvider(ISecretStore store)
+    public GraphAuthProvider(ISecretStore store, ISecretStore tokenCacheStore)
     {
         _store = store;
-        _cacheHelper = new TokenCacheHelper(store);
+        _cacheHelper = new TokenCacheHelper(tokenCacheStore);
     }
 
     /// <summary>
@@ -151,5 +151,10 @@ public sealed class GraphAuthProvider
 
         _cacheHelper.Register(_pca.UserTokenCache);
         return _pca;
+    }
+
+    public void Dispose()
+    {
+        _cacheHelper.Dispose();
     }
 }

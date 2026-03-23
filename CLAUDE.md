@@ -65,8 +65,8 @@ src/MsGraphCli.Tests/        Test project
 
 ### Auth Flow
 
-1. `ISecretStore` (backed by 1Password CLI) stores: client ID, tenant ID, serialized MSAL token cache.
-2. `GraphAuthProvider` builds MSAL `PublicClientApplication`, registers cache callbacks that read/write via `ISecretStore`.
+1. `ISecretStore` (backed by 1Password CLI) stores secrets in two vaults: a read-only vault for app config, a read-write vault for token cache.
+2. `GraphAuthProvider` takes two `ISecretStore` instances (config store + token cache store), builds MSAL `PublicClientApplication`, registers cache callbacks that read/write via the token cache store.
 3. `GraphClientFactory` creates `GraphServiceClient` using `MsalAccessTokenProvider` (implements `IAccessTokenProvider` from Kiota).
 4. Services receive `GraphServiceClient` and make API calls.
 
@@ -74,9 +74,11 @@ src/MsGraphCli.Tests/        Test project
 
 All `op` CLI calls go through `ISecretStore` → `OnePasswordSecretStore`. Never call `op` directly.
 
-Vault: `msgraph-cli` (configurable). Items:
-- `app-registration` — fields: `client-id`, `tenant-id`
-- `msal-token-cache` — field: `notesPlain` (Base64-encoded MSAL V3 cache blob)
+Two vaults (both configurable):
+- `msgraph-cli` (read-only) — app configuration
+  - `ms-graph-app-registration` — fields: `client-id`, `tenant-id`
+- `netclaw-rw` (read-write) — token cache
+  - `msal-token-cache` — field: `notesPlain` (Base64-encoded MSAL V3 cache blob)
 
 ## Code Conventions
 

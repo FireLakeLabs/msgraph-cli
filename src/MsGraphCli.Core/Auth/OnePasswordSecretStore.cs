@@ -122,11 +122,14 @@ public sealed class OnePasswordSecretStore : ISecretStore
     {
         bool exists = await ItemExistsAsync(itemName, cancellationToken);
 
+        // Pass content as argument rather than stdin — op parses stdin as JSON
+        // which breaks with Base64 blobs. ArgumentList bypasses the shell so
+        // there are no escaping concerns with large values.
         if (exists)
         {
-            var (exitCode, _, stderr) = await RunOpWithStdinAsync(
-                ["item", "edit", itemName, "--vault", _vault, "notesPlain=-"],
-                content, cancellationToken);
+            var (exitCode, _, stderr) = await RunOpAsync(
+                ["item", "edit", itemName, "--vault", _vault, $"notesPlain={content}"],
+                cancellationToken);
 
             if (exitCode != 0)
             {
@@ -135,10 +138,10 @@ public sealed class OnePasswordSecretStore : ISecretStore
         }
         else
         {
-            var (exitCode, _, stderr) = await RunOpWithStdinAsync(
+            var (exitCode, _, stderr) = await RunOpAsync(
                 ["item", "create", "--category", "Secure Note", "--title", itemName,
-                 "--vault", _vault, "notesPlain=-"],
-                content, cancellationToken);
+                 "--vault", _vault, $"notesPlain={content}"],
+                cancellationToken);
 
             if (exitCode != 0)
             {
@@ -165,7 +168,8 @@ public sealed class OnePasswordSecretStore : ISecretStore
 
     private static bool IsNotFoundError(string stderr) =>
         stderr.Contains("not found", StringComparison.OrdinalIgnoreCase) ||
-        stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase);
+        stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase) ||
+        stderr.Contains("isn't an item", StringComparison.OrdinalIgnoreCase);
 
     private Task<(int ExitCode, string Stdout, string Stderr)> RunOpAsync(
         IEnumerable<string> arguments, CancellationToken cancellationToken) =>

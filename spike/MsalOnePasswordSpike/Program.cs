@@ -5,6 +5,15 @@ using System.Text.Json;
 
 namespace MsalOnePasswordSpike;
 
+internal static class SharedJsonOptions
+{
+    public static readonly JsonSerializerOptions Instance = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+}
+
 /// <summary>
 /// Spike: Prove that MSAL token cache serialization through 1Password works.
 ///
@@ -24,8 +33,9 @@ public static class Program
     // Scopes we need for the spike: just read the user's profile.
     private static readonly string[] Scopes = ["User.Read", "offline_access"];
 
-    private const string AppRegistrationItem = "app-registration";
+    private const string AppRegistrationItem = "ms-graph-app-registration";
     private const string VaultName = "msgraph-cli";
+    private const string TokenCacheVaultName = "netclaw-rw";
 
     public static async Task<int> Main(string[] args)
     {
@@ -108,7 +118,8 @@ public static class Program
 
     private static async Task<int> RunLogoutAsync(OnePasswordStore store, CancellationToken ct)
     {
-        var cacheHelper = new OnePasswordTokenCacheHelper(store);
+        var cacheStore = new OnePasswordStore(TokenCacheVaultName);
+        var cacheHelper = new OnePasswordTokenCacheHelper(cacheStore);
         await cacheHelper.ClearCacheAsync(ct);
         Console.Error.WriteLine("✓ Logged out. Tokens cleared from 1Password.");
         return 0;
@@ -125,7 +136,8 @@ public static class Program
         Console.Error.WriteLine($"  Tenant ID:  {tenantId}");
 
         var pca = BuildPublicClientApp(clientId, tenantId);
-        var cacheHelper = new OnePasswordTokenCacheHelper(store);
+        var cacheStore = new OnePasswordStore(TokenCacheVaultName);
+        var cacheHelper = new OnePasswordTokenCacheHelper(cacheStore);
         cacheHelper.Register(pca.UserTokenCache);
 
         var accounts = await pca.GetAccountsAsync();
@@ -173,8 +185,9 @@ public static class Program
         // Step 2: Build MSAL PublicClientApplication
         var pca = BuildPublicClientApp(clientId, tenantId);
 
-        // Step 3: Register 1Password-backed token cache
-        var cacheHelper = new OnePasswordTokenCacheHelper(store);
+        // Step 3: Register 1Password-backed token cache (stored in separate vault)
+        var cacheStore = new OnePasswordStore(TokenCacheVaultName);
+        var cacheHelper = new OnePasswordTokenCacheHelper(cacheStore);
         cacheHelper.Register(pca.UserTokenCache);
         Console.Error.WriteLine("[MSAL] Token cache registered with 1Password backend.");
 
@@ -247,11 +260,7 @@ public static class Program
             }
         };
 
-        string json = JsonSerializer.Serialize(result, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        });
+        string json = JsonSerializer.Serialize(result, SharedJsonOptions.Instance);
 
         Console.WriteLine(json);
 

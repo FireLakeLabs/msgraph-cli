@@ -27,7 +27,8 @@ public static class MailCommands
     {
         AppConfig config = ConfigLoader.Load();
         var store = new OnePasswordSecretStore(config.OnePasswordVault);
-        var authProvider = new GraphAuthProvider(store);
+        var tokenCacheStore = new OnePasswordSecretStore(config.TokenCacheVault);
+        var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
         string[] scopes = ScopeRegistry.GetScopes(["mail"], readOnly: true);
         var factory = new GraphClientFactory(authProvider, scopes);
@@ -70,10 +71,8 @@ public static class MailCommands
 
     private static Command BuildList(GlobalOptions global)
     {
-        var folderOption = new Option<string?>("--folder", "Mail folder name or ID (default: inbox)");
-        folderOption.AddAlias("-f");
-        var maxOption = new Option<int?>("--max", "Maximum number of messages to return");
-        maxOption.AddAlias("-n");
+        var folderOption = new Option<string?>("-f", "--folder") { Description = "Mail folder name or ID (default: inbox)" };
+        var maxOption = new Option<int?>("-n", "--max") { Description = "Maximum number of messages to return" };
 
         var command = new Command("list", "List messages in a mail folder");
         command.Options.Add(folderOption);
@@ -115,9 +114,8 @@ public static class MailCommands
 
     private static Command BuildSearch(GlobalOptions global)
     {
-        var queryArgument = new Argument<string>("query", "Search query (KQL syntax)");
-        var maxOption = new Option<int?>("--max", "Maximum number of messages to return");
-        maxOption.AddAlias("-n");
+        var queryArgument = new Argument<string>("query") { Description = "Search query (KQL syntax)" };
+        var maxOption = new Option<int?>("-n", "--max") { Description = "Maximum number of messages to return" };
 
         var command = new Command("search", "Search messages across all folders");
         command.Arguments.Add(queryArgument);
@@ -157,8 +155,8 @@ public static class MailCommands
 
     private static Command BuildGet(GlobalOptions global)
     {
-        var messageIdArgument = new Argument<string>("messageId", "Message ID");
-        var formatOption = new Option<string>("--format", () => "summary", "Output detail level: summary or full");
+        var messageIdArgument = new Argument<string>("messageId") { Description = "Message ID" };
+        var formatOption = new Option<string>("--format") { Description = "Output detail level: summary or full", DefaultValueFactory = _ => "summary" };
 
         var command = new Command("get", "Get a specific message");
         command.Arguments.Add(messageIdArgument);

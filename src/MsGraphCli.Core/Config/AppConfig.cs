@@ -5,6 +5,7 @@ namespace MsGraphCli.Core.Config;
 public sealed class AppConfig
 {
     public string OnePasswordVault { get; set; } = "msgraph-cli";
+    public string TokenCacheVault { get; set; } = "netclaw-rw";
     public string DefaultOutputFormat { get; set; } = "table";
     public string? DefaultTimezone { get; set; }
     public string[]? EnableCommands { get; set; }
@@ -44,6 +45,12 @@ public static class ConfigLoader
         if (!string.IsNullOrEmpty(vault))
         {
             config.OnePasswordVault = vault;
+        }
+
+        string? tokenCacheVault = Environment.GetEnvironmentVariable("MSGRAPH_TOKEN_CACHE_VAULT");
+        if (!string.IsNullOrEmpty(tokenCacheVault))
+        {
+            config.TokenCacheVault = tokenCacheVault;
         }
 
         string? enableCommands = Environment.GetEnvironmentVariable("MSGRAPH_ENABLE_COMMANDS");

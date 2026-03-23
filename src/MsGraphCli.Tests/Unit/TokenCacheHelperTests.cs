@@ -1,5 +1,6 @@
 using FluentAssertions;
 using MsGraphCli.Core.Auth;
+using Xunit;
 
 namespace MsGraphCli.Tests.Unit;
 
@@ -29,14 +30,15 @@ internal sealed class InMemorySecretStore : ISecretStore
 
     public Task WriteFieldsAsync(string itemName, Dictionary<string, string> fields, CancellationToken cancellationToken = default)
     {
-        if (!_fields.ContainsKey(itemName))
+        if (!_fields.TryGetValue(itemName, out Dictionary<string, string>? itemFields))
         {
-            _fields[itemName] = new Dictionary<string, string>();
+            itemFields = new Dictionary<string, string>();
+            _fields[itemName] = itemFields;
         }
 
         foreach (var (key, value) in fields)
         {
-            _fields[itemName][key] = value;
+            itemFields[key] = value;
         }
 
         return Task.CompletedTask;

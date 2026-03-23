@@ -62,7 +62,8 @@ public sealed class OnePasswordStore
         {
             // "not found" is expected on first run
             if (stderr.Contains("not found", StringComparison.OrdinalIgnoreCase) ||
-                stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase))
+                stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase) ||
+                stderr.Contains("isn't an item", StringComparison.OrdinalIgnoreCase))
                 return null;
 
             throw new InvalidOperationException($"Failed to read '{reference}': {stderr}");
@@ -83,7 +84,8 @@ public sealed class OnePasswordStore
         if (exitCode != 0)
         {
             if (stderr.Contains("not found", StringComparison.OrdinalIgnoreCase) ||
-                stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase))
+                stderr.Contains("could not be found", StringComparison.OrdinalIgnoreCase) ||
+                stderr.Contains("isn't an item", StringComparison.OrdinalIgnoreCase))
                 return null;
 
             throw new InvalidOperationException($"Failed to read note '{itemName}': {stderr}");
@@ -112,21 +114,18 @@ public sealed class OnePasswordStore
 
         if (exists)
         {
-            // Update existing item. We use stdin to avoid shell escaping issues with large blobs.
-            var (exitCode, _, stderr) = await RunOpWithStdinAsync(
-                ["item", "edit", itemName, "--vault", _vault, $"notesPlain=-"],
-                content, ct);
+            // ArgumentList passes args directly to the process (no shell), so escaping isn't a concern.
+            var (exitCode, _, stderr) = await RunOpAsync(
+                ["item", "edit", itemName, "--vault", _vault, $"notesPlain={content}"], ct);
 
             if (exitCode != 0)
                 throw new InvalidOperationException($"Failed to update note '{itemName}': {stderr}");
         }
         else
         {
-            // Create new Secure Note. Use stdin for the content.
-            var (exitCode, _, stderr) = await RunOpWithStdinAsync(
+            var (exitCode, _, stderr) = await RunOpAsync(
                 ["item", "create", "--category", "Secure Note", "--title", itemName,
-                 "--vault", _vault, $"notesPlain=-"],
-                content, ct);
+                 "--vault", _vault, $"notesPlain={content}"], ct);
 
             if (exitCode != 0)
                 throw new InvalidOperationException($"Failed to create note '{itemName}': {stderr}");
@@ -196,8 +195,9 @@ public sealed class OnePasswordStore
         foreach (string arg in arguments)
             psi.ArgumentList.Add(arg);
 
-        // Ensure op doesn't prompt for interactive input
-        psi.Environment["OP_FORMAT"] = "json";
+        // Don't set OP_FORMAT — it changes output format of --fields from raw
+        // values to JSON objects, and makes op parse stdin as JSON.
+        // Commands that need JSON output pass --format json explicitly.
 
         using var process = new Process { StartInfo = psi };
 

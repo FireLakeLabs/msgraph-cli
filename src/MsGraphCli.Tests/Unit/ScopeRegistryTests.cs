@@ -1,5 +1,6 @@
 using FluentAssertions;
 using MsGraphCli.Core.Auth;
+using Xunit;
 
 namespace MsGraphCli.Tests.Unit;
 

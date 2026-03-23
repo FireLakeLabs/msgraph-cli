@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
@@ -57,11 +58,7 @@ public sealed class TableOutputFormatter : IOutputFormatter
         // For table mode, each command is responsible for calling
         // the appropriate WriteTable* method. This generic fallback
         // serializes to JSON as a safety net.
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        });
+        string json = JsonSerializer.Serialize(data, FallbackJsonOptions);
         stdout.WriteLine(json);
     }
 
@@ -74,6 +71,12 @@ public sealed class TableOutputFormatter : IOutputFormatter
     {
         stderr.WriteLine(message);
     }
+
+    private static readonly JsonSerializerOptions FallbackJsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
     // ── Typed table writers for specific data types ──
 
@@ -91,7 +94,7 @@ public sealed class TableOutputFormatter : IOutputFormatter
             table.AddRow(
                 Markup.Escape(Truncate(msg.From, 30)),
                 Markup.Escape(Truncate(msg.Subject, 45)),
-                msg.ReceivedDateTime.LocalDateTime.ToString("yyyy-MM-dd HH:mm"),
+                msg.ReceivedDateTime.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
                 readMark
             );
         }
@@ -110,11 +113,11 @@ public sealed class TableOutputFormatter : IOutputFormatter
         {
             string unread = folder.UnreadItemCount > 0
                 ? $"[yellow]{folder.UnreadItemCount}[/]"
-                : folder.UnreadItemCount.ToString();
+                : folder.UnreadItemCount.ToString(CultureInfo.InvariantCulture);
 
             table.AddRow(
                 Markup.Escape(folder.DisplayName),
-                folder.TotalItemCount.ToString(),
+                folder.TotalItemCount.ToString(CultureInfo.InvariantCulture),
                 unread
             );
         }
@@ -134,12 +137,14 @@ public sealed class PlainOutputFormatter : IOutputFormatter
     public void WriteResult<T>(T data, TextWriter stdout)
     {
         // Generic fallback — specific commands override
-        string json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        });
+        string json = JsonSerializer.Serialize(data, PlainFallbackJsonOptions);
         stdout.WriteLine(json);
     }
+
+    private static readonly JsonSerializerOptions PlainFallbackJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
     public void WriteError(string errorCode, string message, TextWriter stderr)
     {

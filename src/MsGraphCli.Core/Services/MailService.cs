@@ -1,6 +1,7 @@
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using MsGraphCli.Core.Models;
+using MailFolder = MsGraphCli.Core.Models.MailFolder;
 
 namespace MsGraphCli.Core.Services;
 
@@ -137,7 +138,7 @@ public sealed class MailService : IMailService
         )).ToList();
     }
 
-    private static IReadOnlyList<MailMessageSummary> MapMessages(List<Message>? messages)
+    private static List<MailMessageSummary> MapMessages(List<Message>? messages)
     {
         if (messages is null)
         {

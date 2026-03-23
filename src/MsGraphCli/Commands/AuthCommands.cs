@@ -24,8 +24,8 @@ public static class AuthCommands
 
     private static Command BuildSetup(GlobalOptions global)
     {
-        var clientIdOption = new Option<string?>("--client-id", "Entra ID Application (Client) ID");
-        var tenantIdOption = new Option<string?>("--tenant-id", "Entra ID Directory (Tenant) ID");
+        var clientIdOption = new Option<string?>("--client-id") { Description = "Entra ID Application (Client) ID" };
+        var tenantIdOption = new Option<string?>("--tenant-id") { Description = "Entra ID Directory (Tenant) ID" };
 
         var command = new Command("setup", "Configure 1Password vault and store app registration");
         command.Options.Add(clientIdOption);
@@ -35,17 +35,19 @@ public static class AuthCommands
         {
             AppConfig config = ConfigLoader.Load();
             var store = new OnePasswordSecretStore(config.OnePasswordVault);
+            var tokenCacheStore = new OnePasswordSecretStore(config.TokenCacheVault);
 
             if (!await store.IsAvailableAsync(cancellationToken))
             {
                 Console.Error.WriteLine("ERROR: 1Password CLI (op) is not available or you are not signed in.");
                 Console.Error.WriteLine("  Install: https://developer.1password.com/docs/cli/get-started/");
                 Console.Error.WriteLine("  Sign in: eval $(op signin)");
-                parseResult.Configuration.Output.Write("");
+                // Early return — error already written to stderr
                 return;
             }
 
             await store.EnsureVaultExistsAsync(cancellationToken);
+            await tokenCacheStore.EnsureVaultExistsAsync(cancellationToken);
 
             string? clientId = parseResult.GetValue(clientIdOption);
             string? tenantId = parseResult.GetValue(tenantIdOption);
@@ -68,7 +70,7 @@ public static class AuthCommands
                 return;
             }
 
-            await store.WriteFieldsAsync("app-registration", new Dictionary<string, string>
+            await store.WriteFieldsAsync("ms-graph-app-registration", new Dictionary<string, string>
             {
                 ["client-id"] = clientId,
                 ["tenant-id"] = tenantId,
@@ -84,9 +86,9 @@ public static class AuthCommands
 
     private static Command BuildLogin(GlobalOptions global)
     {
-        var servicesOption = new Option<string?>("--services", "Comma-separated list of services (mail,calendar,drive,todo,excel,docs)");
-        var readonlyOption = new Option<bool>("--readonly", "Request only read scopes");
-        var deviceCodeOption = new Option<bool>("--device-code", "Use device code flow (for headless/SSH)");
+        var servicesOption = new Option<string?>("--services") { Description = "Comma-separated list of services (mail,calendar,drive,todo,excel,docs)" };
+        var readonlyOption = new Option<bool>("--readonly") { Description = "Request only read scopes" };
+        var deviceCodeOption = new Option<bool>("--device-code") { Description = "Use device code flow (for headless/SSH)" };
 
         var command = new Command("login", "Authenticate with Microsoft Entra ID");
         command.Options.Add(servicesOption);
@@ -97,7 +99,8 @@ public static class AuthCommands
         {
             AppConfig config = ConfigLoader.Load();
             var store = new OnePasswordSecretStore(config.OnePasswordVault);
-            var authProvider = new GraphAuthProvider(store);
+            var tokenCacheStore = new OnePasswordSecretStore(config.TokenCacheVault);
+            var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
             string? servicesRaw = parseResult.GetValue(servicesOption);
             bool readOnly = parseResult.GetValue(readonlyOption);
@@ -155,7 +158,8 @@ public static class AuthCommands
         {
             AppConfig config = ConfigLoader.Load();
             var store = new OnePasswordSecretStore(config.OnePasswordVault);
-            var authProvider = new GraphAuthProvider(store);
+            var tokenCacheStore = new OnePasswordSecretStore(config.TokenCacheVault);
+            var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
             string[] scopes = ScopeRegistry.GetAllScopes(readOnly: false);
             AuthStatus status = await authProvider.GetStatusAsync(scopes, cancellationToken);
@@ -214,7 +218,8 @@ public static class AuthCommands
         {
             AppConfig config = ConfigLoader.Load();
             var store = new OnePasswordSecretStore(config.OnePasswordVault);
-            var authProvider = new GraphAuthProvider(store);
+            var tokenCacheStore = new OnePasswordSecretStore(config.TokenCacheVault);
+            var authProvider = new GraphAuthProvider(store, tokenCacheStore);
 
             await authProvider.LogoutAsync(cancellationToken);
 
