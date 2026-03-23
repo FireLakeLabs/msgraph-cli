@@ -17,6 +17,21 @@ public interface IMailService
         string messageId, bool includeBody, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<MailFolder>> ListFoldersAsync(CancellationToken cancellationToken);
+
+    Task SendMessageAsync(MailSendRequest request, CancellationToken cancellationToken);
+
+    Task ReplyAsync(string messageId, string body, bool replyAll, CancellationToken cancellationToken);
+
+    Task ForwardAsync(string messageId, IReadOnlyList<string> toRecipients, string? body, CancellationToken cancellationToken);
+
+    Task<MailMoveResult> MoveMessageAsync(string messageId, string destinationFolderId, CancellationToken cancellationToken);
+
+    Task SetReadStatusAsync(string messageId, bool isRead, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<MailAttachmentInfo>> ListAttachmentsAsync(string messageId, CancellationToken cancellationToken);
+
+    Task<(byte[] Content, string FileName, string ContentType)> DownloadAttachmentAsync(
+        string messageId, string attachmentId, CancellationToken cancellationToken);
 }
 
 public sealed class MailService : IMailService
@@ -137,6 +152,151 @@ public sealed class MailService : IMailService
             UnreadItemCount: f.UnreadItemCount ?? 0
         )).ToList();
     }
+
+    public async Task SendMessageAsync(MailSendRequest request, CancellationToken cancellationToken)
+    {
+        var message = new Message
+        {
+            Subject = request.Subject,
+            Body = new ItemBody
+            {
+                ContentType = string.Equals(request.BodyContentType, "HTML", StringComparison.OrdinalIgnoreCase)
+                    ? BodyType.Html : BodyType.Text,
+                Content = request.Body,
+            },
+            ToRecipients = request.To.Select(ToRecipient).ToList(),
+        };
+
+        if (request.Cc is { Count: > 0 })
+        {
+            message.CcRecipients = request.Cc.Select(ToRecipient).ToList();
+        }
+
+        if (request.Bcc is { Count: > 0 })
+        {
+            message.BccRecipients = request.Bcc.Select(ToRecipient).ToList();
+        }
+
+        if (request.AttachmentPaths is { Count: > 0 })
+        {
+            message.Attachments = [];
+            foreach (string path in request.AttachmentPaths)
+            {
+                byte[] content = await File.ReadAllBytesAsync(path, cancellationToken);
+                if (content.Length > 3 * 1024 * 1024)
+                {
+                    throw new InvalidOperationException(
+                        $"Attachment '{Path.GetFileName(path)}' exceeds 3 MB limit. Large file upload is not yet supported.");
+                }
+
+                message.Attachments.Add(new FileAttachment
+                {
+                    Name = Path.GetFileName(path),
+                    ContentBytes = content,
+                });
+            }
+        }
+
+        await _client.Me.SendMail.PostAsync(
+            new Microsoft.Graph.Me.SendMail.SendMailPostRequestBody
+            {
+                Message = message,
+                SaveToSentItems = true,
+            }, cancellationToken: cancellationToken);
+    }
+
+    public async Task ReplyAsync(string messageId, string body, bool replyAll, CancellationToken cancellationToken)
+    {
+        if (replyAll)
+        {
+            await _client.Me.Messages[messageId].ReplyAll.PostAsync(
+                new Microsoft.Graph.Me.Messages.Item.ReplyAll.ReplyAllPostRequestBody
+                {
+                    Comment = body,
+                }, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await _client.Me.Messages[messageId].Reply.PostAsync(
+                new Microsoft.Graph.Me.Messages.Item.Reply.ReplyPostRequestBody
+                {
+                    Comment = body,
+                }, cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task ForwardAsync(string messageId, IReadOnlyList<string> toRecipients, string? body, CancellationToken cancellationToken)
+    {
+        await _client.Me.Messages[messageId].Forward.PostAsync(
+            new Microsoft.Graph.Me.Messages.Item.Forward.ForwardPostRequestBody
+            {
+                Comment = body,
+                ToRecipients = toRecipients.Select(ToRecipient).ToList(),
+            }, cancellationToken: cancellationToken);
+    }
+
+    public async Task<MailMoveResult> MoveMessageAsync(string messageId, string destinationFolderId, CancellationToken cancellationToken)
+    {
+        Message? moved = await _client.Me.Messages[messageId].Move.PostAsync(
+            new Microsoft.Graph.Me.Messages.Item.Move.MovePostRequestBody
+            {
+                DestinationId = destinationFolderId,
+            }, cancellationToken: cancellationToken);
+
+        return new MailMoveResult(moved?.Id ?? messageId, destinationFolderId);
+    }
+
+    public async Task SetReadStatusAsync(string messageId, bool isRead, CancellationToken cancellationToken)
+    {
+        await _client.Me.Messages[messageId].PatchAsync(new Message
+        {
+            IsRead = isRead,
+        }, cancellationToken: cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MailAttachmentInfo>> ListAttachmentsAsync(string messageId, CancellationToken cancellationToken)
+    {
+        AttachmentCollectionResponse? response = await _client.Me.Messages[messageId].Attachments
+            .GetAsync(config =>
+            {
+                config.QueryParameters.Select = ["id", "name", "contentType", "size"];
+            }, cancellationToken);
+
+        if (response?.Value is null)
+        {
+            return [];
+        }
+
+        return response.Value.Select(a => new MailAttachmentInfo(
+            Id: a.Id ?? "",
+            Name: a.Name ?? "",
+            ContentType: a.ContentType ?? "",
+            Size: a.Size ?? 0
+        )).ToList();
+    }
+
+    public async Task<(byte[] Content, string FileName, string ContentType)> DownloadAttachmentAsync(
+        string messageId, string attachmentId, CancellationToken cancellationToken)
+    {
+        Attachment? attachment = await _client.Me.Messages[messageId].Attachments[attachmentId]
+            .GetAsync(cancellationToken: cancellationToken);
+
+        if (attachment is FileAttachment fileAttachment)
+        {
+            return (
+                fileAttachment.ContentBytes ?? [],
+                fileAttachment.Name ?? "attachment",
+                fileAttachment.ContentType ?? "application/octet-stream"
+            );
+        }
+
+        throw new InvalidOperationException($"Attachment '{attachmentId}' is not a file attachment.");
+    }
+
+    private static Recipient ToRecipient(string email) => new()
+    {
+        EmailAddress = new EmailAddress { Address = email },
+    };
 
     private static List<MailMessageSummary> MapMessages(List<Message>? messages)
     {

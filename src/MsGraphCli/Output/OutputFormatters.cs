@@ -125,6 +125,117 @@ public sealed class TableOutputFormatter : IOutputFormatter
         AnsiConsole.Write(table);
     }
 
+    public static void WriteAttachmentTable(IReadOnlyList<MsGraphCli.Core.Models.MailAttachmentInfo> attachments)
+    {
+        var table = new Table();
+        table.AddColumn("NAME");
+        table.AddColumn("TYPE");
+        table.AddColumn(new TableColumn("SIZE").RightAligned());
+
+        foreach (var att in attachments)
+        {
+            string size = att.Size switch
+            {
+                >= 1024 * 1024 => $"{att.Size / (1024.0 * 1024.0):F1} MB",
+                >= 1024 => $"{att.Size / 1024.0:F1} KB",
+                _ => $"{att.Size.ToString(CultureInfo.InvariantCulture)} B",
+            };
+
+            table.AddRow(
+                Markup.Escape(att.Name),
+                Markup.Escape(att.ContentType),
+                size
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteCalendarTable(IReadOnlyList<MsGraphCli.Core.Models.CalendarInfo> calendars)
+    {
+        var table = new Table();
+        table.AddColumn("NAME");
+        table.AddColumn("DEFAULT");
+        table.AddColumn("ID");
+
+        foreach (var cal in calendars)
+        {
+            table.AddRow(
+                Markup.Escape(cal.Name),
+                cal.IsDefault ? "[green]yes[/]" : "",
+                Markup.Escape(Truncate(cal.Id, 40))
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteCalendarEventTable(IReadOnlyList<MsGraphCli.Core.Models.CalendarEventSummary> events)
+    {
+        var table = new Table();
+        table.AddColumn("SUBJECT");
+        table.AddColumn("START");
+        table.AddColumn("END");
+        table.AddColumn("LOCATION");
+        table.AddColumn("STATUS");
+
+        foreach (var evt in events)
+        {
+            string status = evt.IsCancelled ? "[red]cancelled[/]"
+                : evt.ResponseStatus is not null ? Markup.Escape(evt.ResponseStatus) : "";
+
+            string startStr = evt.IsAllDay
+                ? evt.Start.LocalDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                : evt.Start.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+
+            string endStr = evt.IsAllDay
+                ? evt.End.LocalDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                : evt.End.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+
+            table.AddRow(
+                Markup.Escape(Truncate(evt.Subject, 40)),
+                startStr,
+                endStr,
+                Markup.Escape(Truncate(evt.Location ?? "", 25)),
+                status
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteFreeBusyTable(IReadOnlyList<MsGraphCli.Core.Models.ScheduleResult> schedules)
+    {
+        var table = new Table();
+        table.AddColumn("EMAIL");
+        table.AddColumn("START");
+        table.AddColumn("END");
+        table.AddColumn("STATUS");
+
+        foreach (var schedule in schedules)
+        {
+            foreach (var slot in schedule.Slots)
+            {
+                string statusColor = slot.Status switch
+                {
+                    "Free" or "free" => "[green]free[/]",
+                    "Busy" or "busy" => "[red]busy[/]",
+                    "Tentative" or "tentative" => "[yellow]tentative[/]",
+                    _ => Markup.Escape(slot.Status),
+                };
+
+                table.AddRow(
+                    Markup.Escape(schedule.Email),
+                    slot.Start.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+                    slot.End.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+                    statusColor
+                );
+            }
+        }
+
+        AnsiConsole.Write(table);
+    }
+
     private static string Truncate(string value, int maxLength) =>
         value.Length <= maxLength ? value : string.Concat(value.AsSpan(0, maxLength - 1), "…");
 }

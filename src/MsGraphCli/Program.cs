@@ -1,5 +1,7 @@
 using System.CommandLine;
 using MsGraphCli.Commands;
+using MsGraphCli.Core.Exceptions;
+using MsGraphCli.Output;
 
 namespace MsGraphCli;
 
@@ -14,19 +16,22 @@ public static class Program
         var plainOption = new Option<bool>("--plain") { Description = "Output tab-separated values to stdout" };
         var verboseOption = new Option<bool>("--verbose") { Description = "Verbose logging to stderr" };
         var betaOption = new Option<bool>("--beta") { Description = "Use Microsoft Graph beta endpoint" };
+        var readOnlyOption = new Option<bool>("--readonly") { Description = "Block write operations" };
 
         rootCommand.Options.Add(jsonOption);
         rootCommand.Options.Add(plainOption);
         rootCommand.Options.Add(verboseOption);
         rootCommand.Options.Add(betaOption);
+        rootCommand.Options.Add(readOnlyOption);
 
         // ── Global context ──
         // These are passed through to command handlers via ParseResult
-        var globalContext = new GlobalOptions(jsonOption, plainOption, verboseOption, betaOption);
+        var globalContext = new GlobalOptions(jsonOption, plainOption, verboseOption, betaOption, readOnlyOption);
 
         // ── Register command groups ──
         rootCommand.Subcommands.Add(AuthCommands.Build(globalContext));
         rootCommand.Subcommands.Add(MailCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(CalendarCommands.Build(globalContext));
 
         // ── Version ──
         var versionCommand = new Command("version", "Show version information");
@@ -36,7 +41,16 @@ public static class Program
         });
         rootCommand.Subcommands.Add(versionCommand);
 
-        return await rootCommand.Parse(args).InvokeAsync();
+        int result = await rootCommand.Parse(args).InvokeAsync();
+
+        // If a command handler caught a MsGraphCliException via ActionRunner,
+        // Environment.ExitCode will be set to the correct exit code.
+        if (Environment.ExitCode != 0)
+        {
+            return Environment.ExitCode;
+        }
+
+        return result;
     }
 
     private static string GetVersion()

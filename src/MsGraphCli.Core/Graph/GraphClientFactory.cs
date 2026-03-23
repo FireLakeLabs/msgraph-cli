@@ -21,7 +21,12 @@ public sealed class GraphClientFactory
     public GraphServiceClient CreateClient()
     {
         var credential = new MsalAccessTokenProvider(_authProvider, _scopes);
-        return new GraphServiceClient(new BaseBearerTokenAuthenticationProvider(credential));
+        var authProvider = new BaseBearerTokenAuthenticationProvider(credential);
+
+        var retryHandler = new RetryDelegatingHandler(new HttpClientHandler());
+        var httpClient = new HttpClient(retryHandler);
+
+        return new GraphServiceClient(httpClient, authProvider);
     }
 }
 

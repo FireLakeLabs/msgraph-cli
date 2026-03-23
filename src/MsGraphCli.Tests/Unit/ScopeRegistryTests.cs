@@ -31,6 +31,7 @@ public class ScopeRegistryTests
 
         scopes.Should().Contain("Mail.Read");
         scopes.Should().Contain("Mail.Send");
+        scopes.Should().Contain("Mail.ReadWrite");
     }
 
     [Fact]
