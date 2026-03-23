@@ -9,5 +9,6 @@ public sealed record GlobalOptions(
     Option<bool> Json,
     Option<bool> Plain,
     Option<bool> Verbose,
-    Option<bool> Beta
+    Option<bool> Beta,
+    Option<bool> ReadOnly
 );

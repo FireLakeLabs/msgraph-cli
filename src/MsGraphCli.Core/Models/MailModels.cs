@@ -36,3 +36,18 @@ public record MailAttachmentInfo(
     string ContentType,
     long Size
 );
+
+public record MailSendRequest(
+    IReadOnlyList<string> To,
+    IReadOnlyList<string>? Cc,
+    IReadOnlyList<string>? Bcc,
+    string Subject,
+    string Body,
+    string BodyContentType = "Text",
+    IReadOnlyList<string>? AttachmentPaths = null
+);
+
+public record MailMoveResult(
+    string MessageId,
+    string DestinationFolderId
+);

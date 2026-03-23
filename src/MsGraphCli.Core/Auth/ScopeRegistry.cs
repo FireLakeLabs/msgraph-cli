@@ -11,7 +11,7 @@ public static class ScopeRegistry
 
     public static readonly Dictionary<string, ServiceScopes> Services = new()
     {
-        ["mail"] = new(Read: ["Mail.Read"], Write: ["Mail.Send"]),
+        ["mail"] = new(Read: ["Mail.Read"], Write: ["Mail.Send", "Mail.ReadWrite"]),
         ["calendar"] = new(Read: ["Calendars.Read"], Write: ["Calendars.ReadWrite"]),
         ["drive"] = new(Read: ["Files.Read"], Write: ["Files.ReadWrite"]),
         ["todo"] = new(Read: ["Tasks.Read"], Write: ["Tasks.ReadWrite"]),
