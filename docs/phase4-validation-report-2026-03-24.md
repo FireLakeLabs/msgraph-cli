@@ -13,15 +13,15 @@ Validated the Phase 4 Excel and document features in the current `msgraph-cli` i
 
 Live assets used:
 
-- Excel workbook: `test-phase4.xlsx` (`01UPEVY6E6PQ2I22FVSFGZLH2VPR4GGMEY`)
-- Excel workbook with table for append validation: `Book.xlsx` (`012MBENSIG6JSJUPCYVZFK6BBB4N2IQCG5`)
-- Word document: `test-phase4.docx` (`01UPEVY6B7F6EYD2AMLVEYCZHJS7JBMNHJ`)
+- Excel workbook: `test-phase4.xlsx` (`ITEM_ID_REDACTED_1`)
+- Excel workbook with table for append validation: `Book.xlsx` (`ITEM_ID_REDACTED_2`)
+- Word document: `test-phase4.docx` (`ITEM_ID_REDACTED_3`)
 - PowerPoint document: none found during validation
 
 Auth state at test time:
 
 - `isAuthenticated = true`
-- `userEmail = miranda.redpath@firelakelabs.com`
+- `userEmail = user@example.com`
 - Granted scopes included `Files.Read` and `Files.ReadWrite`
 
 ## What Passed
