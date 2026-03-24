@@ -50,29 +50,6 @@ The following behaviors worked during live validation:
 
 ## Findings
 
-### 1. The phase 4 validation script does not run a live `excel append` test
-
-Severity: medium
-
-The script is intended to validate Phase 4 completion, but the live Excel section never executes `excel append`. It only runs live `excel sheets`, `excel get`, `excel update`, and `excel sheets (beta)`.
-
-Evidence:
-
-- `scripts/test-phase4.sh:144` runs live `excel update`
-- `scripts/test-phase4.sh:149` runs live `excel sheets (beta)`
-- There is no corresponding live `run_test "excel append ..."` entry in the Excel live section
-- The only `excel append` coverage in the script is help output and dry-run coverage at `scripts/test-phase4.sh:101` and `scripts/test-phase4.sh:125`
-
-Impact:
-
-- A key Phase 4 write path can be broken in production while the script still reports success.
-
-Repro steps:
-
-1. Set a valid `EXCEL_ITEM_ID` and run `./scripts/test-phase4.sh`.
-2. Observe the `PHASE 4 TEST: EXCEL OPERATIONS` section.
-3. Confirm that no live `excel append` command is executed.
-
 ### 2. The original workbook fixture `test-phase4.xlsx` is not suitable for append validation
 
 Severity: medium
