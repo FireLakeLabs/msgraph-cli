@@ -23,22 +23,28 @@ public static class ConfigLoader
     };
 
     /// <summary>
-    /// Load config from the default location, with environment variable overrides.
+    /// Load config from disk only, without environment variable overrides.
+    /// Use this when reading config for editing/saving to avoid persisting env overrides.
     /// </summary>
-    public static AppConfig Load()
+    public static AppConfig LoadFromDisk()
     {
         string configPath = GetConfigPath();
-        AppConfig config;
 
         if (File.Exists(configPath))
         {
             string json = File.ReadAllText(configPath);
-            config = JsonSerializer.Deserialize<AppConfig>(json, JsonOptions) ?? new AppConfig();
+            return JsonSerializer.Deserialize<AppConfig>(json, JsonOptions) ?? new AppConfig();
         }
-        else
-        {
-            config = new AppConfig();
-        }
+
+        return new AppConfig();
+    }
+
+    /// <summary>
+    /// Load config from the default location, with environment variable overrides.
+    /// </summary>
+    public static AppConfig Load()
+    {
+        AppConfig config = LoadFromDisk();
 
         // Environment variable overrides
         string? vault = Environment.GetEnvironmentVariable("MSGRAPH_VAULT");

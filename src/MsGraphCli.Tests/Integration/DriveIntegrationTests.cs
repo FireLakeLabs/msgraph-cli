@@ -55,6 +55,7 @@ public class DriveIntegrationTests : IntegrationTestBase
                 DriveItemSummary downloaded = await service.DownloadAsync(uploaded.Id, null, downloadPath, CancellationToken.None);
                 string downloadedContent = await File.ReadAllTextAsync(downloadPath);
                 Assert.Equal(testContent, downloadedContent);
+                Assert.Equal(uploaded.Id, downloaded.Id);
             }
             finally
             {

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MsGraphCli.Core.Models;
 using MsGraphCli.Core.Services;
 using Xunit;

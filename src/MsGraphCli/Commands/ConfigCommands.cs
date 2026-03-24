@@ -133,7 +133,7 @@ public static class ConfigCommands
                 return;
             }
 
-            AppConfig config = ConfigLoader.Load();
+            AppConfig config = ConfigLoader.LoadFromDisk();
 
             try
             {

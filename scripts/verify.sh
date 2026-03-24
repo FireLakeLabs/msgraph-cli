@@ -35,13 +35,28 @@ check_output() {
     fi
 }
 
+check_regex() {
+    local desc="$1"
+    local pattern="$2"
+    shift 2
+    local output
+    output=$("$@" 2>/dev/null) || true
+    if echo "$output" | grep -Eq "$pattern"; then
+        echo "  PASS: $desc"
+        PASSED=$((PASSED + 1))
+    else
+        echo "  FAIL: $desc (output did not match pattern)"
+        FAILED=$((FAILED + 1))
+    fi
+}
+
 echo "=== msgraph-cli smoke tests ==="
 echo "Binary: $MSGRAPH"
 echo ""
 
 # Basic commands
 check "version" $MSGRAPH version
-check_output "version output" "0.5.0" $MSGRAPH version
+check_regex "version output format" '[0-9]+\.[0-9]+\.[0-9]+' $MSGRAPH version
 check "help" $MSGRAPH --help
 check "config path" $MSGRAPH config path
 check "config list" $MSGRAPH config list

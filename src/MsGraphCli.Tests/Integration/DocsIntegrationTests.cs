@@ -37,6 +37,7 @@ public class DocsIntegrationTests : IntegrationTestBase
             try
             {
                 DocumentExportResult result = await docService.ExportAsync(uploaded.Id, "pdf", outputPdf, CancellationToken.None);
+                Assert.NotNull(result);
                 Assert.True(File.Exists(outputPdf));
                 Assert.True(new FileInfo(outputPdf).Length > 0);
             }

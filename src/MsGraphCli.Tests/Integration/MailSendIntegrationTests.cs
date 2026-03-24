@@ -36,21 +36,25 @@ public class MailSendIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task SendMessage_ToSelf_Succeeds()
+    public async Task SendMessage_ToConfiguredRecipient()
     {
         if (!IsLiveTestEnabled) return;
 
+        string? recipient = Environment.GetEnvironmentVariable("MSGRAPH_MAIL_SEND_RECIPIENT");
+        if (string.IsNullOrWhiteSpace(recipient))
+        {
+            // No recipient configured — skip actual send to avoid unintended mail delivery.
+            return;
+        }
+
         MailService service = CreateMailService();
 
-        // Send a test message to self — requires knowing the user's email.
-        // We use a search after send to verify. The send itself is the key test.
-        // Mail send is skipped by default to avoid unintended mail delivery.
-        // To test, replace the email below and uncomment.
-        // var request = new MailSendRequest(
-        //     To: ["your-test-email@example.com"],
-        //     Cc: null, Bcc: null,
-        //     Subject: $"Integration Test {Guid.NewGuid():N}",
-        //     Body: "Automated integration test message");
-        // await service.SendMessageAsync(request, CancellationToken.None);
+        var request = new MailSendRequest(
+            To: [recipient],
+            Cc: null, Bcc: null,
+            Subject: $"Integration Test {Guid.NewGuid():N}",
+            Body: "Automated integration test message");
+
+        await service.SendMessageAsync(request, CancellationToken.None);
     }
 }
