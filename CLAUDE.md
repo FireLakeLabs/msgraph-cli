@@ -103,3 +103,16 @@ Two vaults (both configurable):
 - Don't write data to stdout from anywhere except `IOutputFormatter`.
 - Don't add Teams commands (explicitly deferred).
 - Don't use `var` when the type isn't obvious from the right-hand side.
+
+## Microsoft Graph SDK Reference
+
+When implementing Graph API calls, use these resources — **never** decompile DLLs or inspect binaries:
+
+- **SDK API Reference (primary):** https://microsoftgraph-msgraph-sdk-dotnet.mintlify.app/api-reference/graph-service-client
+- **SDK source code:** https://github.com/microsoftgraph/msgraph-sdk-dotnet/tree/main/src/Microsoft.Graph
+- **REST API docs (C# examples):** https://learn.microsoft.com/en-us/graph/api/
+
+### What NOT to do for SDK reference
+- Do NOT decompile NuGet packages or DLLs (no ILSpy, dotnet-decompile, etc.)
+- Do NOT search the local filesystem for SDK source or documentation
+- Do NOT guess API signatures — fetch the docs above instead

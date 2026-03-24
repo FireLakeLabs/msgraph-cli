@@ -15,21 +15,25 @@ public static class Program
         var verboseOption = new Option<bool>("--verbose") { Description = "Verbose logging to stderr" };
         var betaOption = new Option<bool>("--beta") { Description = "Use Microsoft Graph beta endpoint" };
         var readOnlyOption = new Option<bool>("--read-only") { Description = "Block write operations" };
+        var dryRunOption = new Option<bool>("--dry-run") { Description = "Show what would be done without executing" };
 
         rootCommand.Options.Add(jsonOption);
         rootCommand.Options.Add(plainOption);
         rootCommand.Options.Add(verboseOption);
         rootCommand.Options.Add(betaOption);
         rootCommand.Options.Add(readOnlyOption);
+        rootCommand.Options.Add(dryRunOption);
 
         // ── Global context ──
         // These are passed through to command handlers via ParseResult
-        var globalContext = new GlobalOptions(jsonOption, plainOption, verboseOption, betaOption, readOnlyOption);
+        var globalContext = new GlobalOptions(jsonOption, plainOption, verboseOption, betaOption, readOnlyOption, dryRunOption);
 
         // ── Register command groups ──
         rootCommand.Subcommands.Add(AuthCommands.Build(globalContext));
         rootCommand.Subcommands.Add(MailCommands.Build(globalContext));
         rootCommand.Subcommands.Add(CalendarCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(DriveCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(TasksCommands.Build(globalContext));
 
         // ── Version ──
         var versionCommand = new Command("version", "Show version information");

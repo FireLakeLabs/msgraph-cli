@@ -19,6 +19,17 @@ public static class CommandGuard
         "calendar update",
         "calendar delete",
         "calendar respond",
+        "drive upload",
+        "drive mkdir",
+        "drive move",
+        "drive rename",
+        "drive delete",
+        "todo lists create",
+        "todo add",
+        "todo update",
+        "todo done",
+        "todo undo",
+        "todo delete",
     };
 
     /// <summary>
