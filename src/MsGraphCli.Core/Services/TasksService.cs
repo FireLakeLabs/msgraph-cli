@@ -32,12 +32,6 @@ public sealed class TasksService : ITasksService
 {
     private readonly GraphServiceClient _client;
 
-    private static readonly string[] TaskListSelect = ["id", "displayName", "isOwner", "wellknownListName"];
-
-    private static readonly string[] TaskSelect =
-        ["id", "title", "body", "status", "dueDateTime", "completedDateTime",
-         "createdDateTime", "lastModifiedDateTime", "importance"];
-
     public TasksService(GraphServiceClient client)
     {
         _client = client;
@@ -50,7 +44,6 @@ public sealed class TasksService : ITasksService
         var response = await _client.Me.Todo.Lists
             .GetAsync(config =>
             {
-                config.QueryParameters.Select = TaskListSelect;
                 config.QueryParameters.Top = top;
             }, cancellationToken);
 
@@ -89,7 +82,6 @@ public sealed class TasksService : ITasksService
         var response = await _client.Me.Todo.Lists[listId].Tasks
             .GetAsync(config =>
             {
-                config.QueryParameters.Select = TaskSelect;
                 config.QueryParameters.Top = top;
 
                 if (string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase))
@@ -113,10 +105,7 @@ public sealed class TasksService : ITasksService
     public async Task<TodoTaskItem> GetTaskAsync(string listId, string taskId, CancellationToken cancellationToken)
     {
         TodoTask? task = await _client.Me.Todo.Lists[listId].Tasks[taskId]
-            .GetAsync(config =>
-            {
-                config.QueryParameters.Select = TaskSelect;
-            }, cancellationToken);
+            .GetAsync(cancellationToken: cancellationToken);
 
         if (task is null)
         {

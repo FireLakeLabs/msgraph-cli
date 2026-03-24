@@ -260,7 +260,10 @@ public sealed class DriveService : IDriveService
     public async Task<DriveItemSummary> MoveAsync(string itemId, string destinationPath, CancellationToken cancellationToken)
     {
         string driveId = await GetDriveIdAsync(cancellationToken);
-        DriveItem? dest = await _client.Drives[driveId].Root.ItemWithPath(destinationPath).GetAsync(cancellationToken: cancellationToken);
+
+        DriveItem? dest = destinationPath is "/" or ""
+            ? await _client.Drives[driveId].Items["root"].GetAsync(cancellationToken: cancellationToken)
+            : await _client.Drives[driveId].Root.ItemWithPath(destinationPath).GetAsync(cancellationToken: cancellationToken);
 
         if (dest is null)
         {
