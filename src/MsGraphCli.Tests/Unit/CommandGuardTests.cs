@@ -29,6 +29,8 @@ public class CommandGuardTests
     [InlineData("todo done")]
     [InlineData("todo undo")]
     [InlineData("todo delete")]
+    [InlineData("excel update")]
+    [InlineData("excel append")]
     public void EnforceReadOnly_WriteCommand_WhenReadOnly_Throws(string commandPath)
     {
         Action act = () => CommandGuard.EnforceReadOnly(commandPath, readOnlyFlag: true);
@@ -52,6 +54,10 @@ public class CommandGuardTests
     [InlineData("todo lists")]
     [InlineData("todo list")]
     [InlineData("todo get")]
+    [InlineData("excel sheets")]
+    [InlineData("excel get")]
+    [InlineData("docs export")]
+    [InlineData("docs cat")]
     public void EnforceReadOnly_ReadCommand_WhenReadOnly_DoesNotThrow(string commandPath)
     {
         Action act = () => CommandGuard.EnforceReadOnly(commandPath, readOnlyFlag: true);

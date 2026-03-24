@@ -72,3 +72,8 @@ Thumbs.db
 ## Test results
 TestResults/
 coverage/
+
+## Generated test fixtures (recreate via scripts/create-test-fixtures.py)
+tests/fixtures/*.xlsx
+tests/fixtures/*.docx
+tests/fixtures/*.pptx

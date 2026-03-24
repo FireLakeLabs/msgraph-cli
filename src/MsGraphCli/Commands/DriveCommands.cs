@@ -40,7 +40,8 @@ public static class DriveCommands
         string[] scopes = ScopeRegistry.GetScopes(["drive"], readOnly: readOnly);
         HttpClient httpClient = GraphClientFactory.CreateDefaultHttpClient();
         var factory = new GraphClientFactory(authProvider, scopes, httpClient);
-        var client = factory.CreateClient();
+        bool useBeta = parseResult.GetValue(global.Beta);
+        var client = factory.CreateClient(useBeta: useBeta);
         var service = new DriveService(client);
 
         bool isJson = parseResult.GetValue(global.Json);
