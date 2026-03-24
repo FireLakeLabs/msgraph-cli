@@ -66,12 +66,12 @@ public sealed class DocumentService : IDocumentService
         }
 
         long bytesWritten;
+        await using (stream)
         await using (FileStream fileStream = File.Create(outputPath))
         {
             await stream.CopyToAsync(fileStream, cancellationToken);
             bytesWritten = fileStream.Length;
         }
-        await stream.DisposeAsync();
 
         return new DocumentExportResult(itemId, format, outputPath, bytesWritten);
     }
@@ -103,8 +103,10 @@ public sealed class DocumentService : IDocumentService
 
         // Copy to memory stream so we can seek
         using var memoryStream = new MemoryStream();
-        await content.CopyToAsync(memoryStream, cancellationToken);
-        await content.DisposeAsync();
+        await using (content)
+        {
+            await content.CopyToAsync(memoryStream, cancellationToken);
+        }
         memoryStream.Position = 0;
 
         return extension switch

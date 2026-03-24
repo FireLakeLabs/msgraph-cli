@@ -414,7 +414,7 @@ public sealed class TableOutputFormatter : IOutputFormatter
                         .Select(cell => cell.ValueKind switch
                         {
                             JsonValueKind.String => Markup.Escape(cell.GetString() ?? ""),
-                            JsonValueKind.Number => cell.GetDouble().ToString(CultureInfo.InvariantCulture),
+                            JsonValueKind.Number => cell.GetRawText(),
                             JsonValueKind.True => "TRUE",
                             JsonValueKind.False => "FALSE",
                             JsonValueKind.Null => "",

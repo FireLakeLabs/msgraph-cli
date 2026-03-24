@@ -154,6 +154,9 @@ public sealed class ExcelService : IExcelService
             JsonValueKind.Object => new UntypedObject(
                 element.EnumerateObject().ToDictionary(p => p.Name, p => JsonElementToUntypedNode(p.Value))),
             JsonValueKind.String => new UntypedString(element.GetString() ?? ""),
+            JsonValueKind.Number when element.TryGetInt32(out int i) => new UntypedInteger(i),
+            JsonValueKind.Number when element.TryGetInt64(out long l) => new UntypedLong(l),
+            JsonValueKind.Number when element.TryGetDecimal(out decimal d) => new UntypedDecimal(d),
             JsonValueKind.Number => new UntypedDouble(element.GetDouble()),
             JsonValueKind.True => new UntypedBoolean(true),
             JsonValueKind.False => new UntypedBoolean(false),
