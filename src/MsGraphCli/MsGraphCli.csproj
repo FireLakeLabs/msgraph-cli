@@ -6,6 +6,11 @@
     <RootNamespace>MsGraphCli</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\MsGraphCli.Core\MsGraphCli.Core.csproj" />
   </ItemGroup>
