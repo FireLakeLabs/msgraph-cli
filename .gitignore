@@ -77,3 +77,6 @@ coverage/
 tests/fixtures/*.xlsx
 tests/fixtures/*.docx
 tests/fixtures/*.pptx
+
+# Published binaries
+publish/

@@ -67,6 +67,82 @@ public static class ConfigLoader
         return config;
     }
 
+    /// <summary>
+    /// Save config to the default location, creating the directory if needed.
+    /// </summary>
+    public static void Save(AppConfig config)
+    {
+        string configPath = GetConfigPath();
+        string? directory = Path.GetDirectoryName(configPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        string json = JsonSerializer.Serialize(config, JsonOptions);
+        File.WriteAllText(configPath, json);
+    }
+
+    /// <summary>
+    /// Returns the list of known config keys that can be used with get/set.
+    /// </summary>
+    public static IReadOnlyDictionary<string, string> GetKnownKeys() => new Dictionary<string, string>
+    {
+        ["onePasswordVault"] = "1Password vault for app config (read-only)",
+        ["tokenCacheVault"] = "1Password vault for token cache (read-write)",
+        ["defaultOutputFormat"] = "Default output format: table, json, or plain",
+        ["defaultTimezone"] = "Default timezone for date display",
+        ["enableCommands"] = "Comma-separated command allowlist (null = all)",
+        ["verbose"] = "Enable verbose logging (true/false)",
+    };
+
+    /// <summary>
+    /// Get a config value by key name.
+    /// </summary>
+    public static string? GetValue(AppConfig config, string key)
+    {
+        return key switch
+        {
+            "onePasswordVault" => config.OnePasswordVault,
+            "tokenCacheVault" => config.TokenCacheVault,
+            "defaultOutputFormat" => config.DefaultOutputFormat,
+            "defaultTimezone" => config.DefaultTimezone,
+            "enableCommands" => config.EnableCommands is not null ? string.Join(",", config.EnableCommands) : null,
+            "verbose" => config.Verbose.ToString().ToLowerInvariant(),
+            _ => throw new ArgumentException($"Unknown config key: {key}. Valid keys: {string.Join(", ", GetKnownKeys().Keys)}"),
+        };
+    }
+
+    /// <summary>
+    /// Set a config value by key name.
+    /// </summary>
+    public static void SetValue(AppConfig config, string key, string value)
+    {
+        switch (key)
+        {
+            case "onePasswordVault":
+                config.OnePasswordVault = value;
+                break;
+            case "tokenCacheVault":
+                config.TokenCacheVault = value;
+                break;
+            case "defaultOutputFormat":
+                config.DefaultOutputFormat = value;
+                break;
+            case "defaultTimezone":
+                config.DefaultTimezone = value;
+                break;
+            case "enableCommands":
+                config.EnableCommands = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                break;
+            case "verbose":
+                config.Verbose = bool.Parse(value);
+                break;
+            default:
+                throw new ArgumentException($"Unknown config key: {key}. Valid keys: {string.Join(", ", GetKnownKeys().Keys)}");
+        }
+    }
+
     public static string GetConfigPath()
     {
         string? envPath = Environment.GetEnvironmentVariable("MSGRAPH_CONFIG");

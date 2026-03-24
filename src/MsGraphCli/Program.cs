@@ -36,6 +36,8 @@ public static class Program
         rootCommand.Subcommands.Add(TasksCommands.Build(globalContext));
         rootCommand.Subcommands.Add(ExcelCommands.Build(globalContext));
         rootCommand.Subcommands.Add(DocsCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(ConfigCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(CompletionsCommands.Build());
 
         // ── Version ──
         var versionCommand = new Command("version", "Show version information");

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <Version>0.5.0</Version>
     <Authors>Fire Lake Labs</Authors>
     <Product>msgraph-cli</Product>
     <Description>CLI for Microsoft 365 via Microsoft Graph API</Description>
