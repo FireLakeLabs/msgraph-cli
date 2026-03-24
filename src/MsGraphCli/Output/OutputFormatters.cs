@@ -371,6 +371,76 @@ public sealed class TableOutputFormatter : IOutputFormatter
         AnsiConsole.Write(table);
     }
 
+    // ── Excel formatters ──
+
+    public static void WriteWorksheetTable(IReadOnlyList<MsGraphCli.Core.Models.WorksheetInfo> sheets)
+    {
+        var table = new Table();
+        table.AddColumn("NAME");
+        table.AddColumn("VISIBILITY");
+        table.AddColumn(new TableColumn("POSITION").RightAligned());
+        table.AddColumn("ID");
+
+        foreach (MsGraphCli.Core.Models.WorksheetInfo sheet in sheets)
+        {
+            table.AddRow(
+                Markup.Escape(sheet.Name),
+                sheet.Visibility,
+                sheet.Position.ToString(CultureInfo.InvariantCulture),
+                Markup.Escape(Truncate(sheet.Id, 40))
+            );
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    public static void WriteRangeTable(MsGraphCli.Core.Models.RangeData range)
+    {
+        var table = new Table();
+
+        // Use column letters as headers (A, B, C, ...)
+        for (int col = 0; col < range.ColumnCount; col++)
+        {
+            table.AddColumn(GetColumnLetter(col));
+        }
+
+        if (range.Values.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement row in range.Values.EnumerateArray())
+            {
+                if (row.ValueKind == JsonValueKind.Array)
+                {
+                    string[] cells = row.EnumerateArray()
+                        .Select(cell => cell.ValueKind switch
+                        {
+                            JsonValueKind.String => Markup.Escape(cell.GetString() ?? ""),
+                            JsonValueKind.Number => cell.GetDouble().ToString(CultureInfo.InvariantCulture),
+                            JsonValueKind.True => "TRUE",
+                            JsonValueKind.False => "FALSE",
+                            JsonValueKind.Null => "",
+                            _ => Markup.Escape(cell.ToString()),
+                        })
+                        .ToArray();
+                    table.AddRow(cells);
+                }
+            }
+        }
+
+        Console.Error.WriteLine($"Range: {range.Address} ({range.RowCount} rows × {range.ColumnCount} columns)");
+        AnsiConsole.Write(table);
+    }
+
+    private static string GetColumnLetter(int index)
+    {
+        string result = "";
+        while (index >= 0)
+        {
+            result = (char)('A' + index % 26) + result;
+            index = index / 26 - 1;
+        }
+        return result;
+    }
+
     private static string Truncate(string value, int maxLength) =>
         value.Length <= maxLength ? value : string.Concat(value.AsSpan(0, maxLength - 1), "…");
 }

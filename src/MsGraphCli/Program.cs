@@ -34,6 +34,8 @@ public static class Program
         rootCommand.Subcommands.Add(CalendarCommands.Build(globalContext));
         rootCommand.Subcommands.Add(DriveCommands.Build(globalContext));
         rootCommand.Subcommands.Add(TasksCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(ExcelCommands.Build(globalContext));
+        rootCommand.Subcommands.Add(DocsCommands.Build(globalContext));
 
         // ── Version ──
         var versionCommand = new Command("version", "Show version information");

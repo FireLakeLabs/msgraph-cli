@@ -30,6 +30,8 @@ public static class CommandGuard
         "todo done",
         "todo undo",
         "todo delete",
+        "excel update",
+        "excel append",
     };
 
     /// <summary>

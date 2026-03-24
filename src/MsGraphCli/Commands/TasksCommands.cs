@@ -66,7 +66,8 @@ public static class TasksCommands
         string[] scopes = ScopeRegistry.GetScopes(["todo"], readOnly: readOnly);
         HttpClient httpClient = GraphClientFactory.CreateDefaultHttpClient();
         var factory = new GraphClientFactory(authProvider, scopes, httpClient);
-        var client = factory.CreateClient();
+        bool useBeta = parseResult.GetValue(global.Beta);
+        var client = factory.CreateClient(useBeta: useBeta);
         var service = new TasksService(client);
 
         bool isJson = parseResult.GetValue(global.Json);

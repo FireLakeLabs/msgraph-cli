@@ -21,10 +21,15 @@ public sealed class GraphClientFactory
         _httpClient = httpClient;
     }
 
-    public GraphServiceClient CreateClient()
+    public GraphServiceClient CreateClient(bool useBeta = false)
     {
         var credential = new MsalAccessTokenProvider(_authProvider, _scopes);
         var authProvider = new BaseBearerTokenAuthenticationProvider(credential);
+
+        if (useBeta)
+        {
+            return new GraphServiceClient(_httpClient, authProvider, "https://graph.microsoft.com/beta");
+        }
 
         return new GraphServiceClient(_httpClient, authProvider);
     }

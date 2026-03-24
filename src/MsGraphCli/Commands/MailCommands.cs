@@ -43,7 +43,8 @@ public static class MailCommands
         string[] scopes = ScopeRegistry.GetScopes(["mail"], readOnly: readOnly);
         HttpClient httpClient = GraphClientFactory.CreateDefaultHttpClient();
         var factory = new GraphClientFactory(authProvider, scopes, httpClient);
-        var client = factory.CreateClient();
+        bool useBeta = parseResult.GetValue(global.Beta);
+        var client = factory.CreateClient(useBeta: useBeta);
         var service = new MailService(client);
 
         bool isJson = parseResult.GetValue(global.Json);
