@@ -89,16 +89,14 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo lists create", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string displayName = parseResult.GetValue(displayNameArgument)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "lists create", details = new { displayName } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "lists create", details = new { displayName } }, Console.Out);
                 }
                 else
                 {
@@ -106,6 +104,8 @@ public static class TasksCommands
                 }
                 return;
             }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             TaskListInfo created = await service.CreateTaskListAsync(displayName, cancellationToken);
 
@@ -234,17 +234,15 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo add", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string listId = parseResult.GetValue(listIdArgument)!;
             string title = parseResult.GetValue(titleOption)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "add", details = new { listId, title } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "add", details = new { listId, title } }, Console.Out);
                 }
                 else
                 {
@@ -254,9 +252,19 @@ public static class TasksCommands
             }
 
             string? dueRaw = parseResult.GetValue(dueOption);
-            DateTimeOffset? dueDate = dueRaw is not null
-                ? DateTimeOffset.Parse(dueRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
-                : null;
+            DateTimeOffset? dueDate = null;
+            if (dueRaw is not null)
+            {
+                if (!DateTimeOffset.TryParse(dueRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset parsedDue))
+                {
+                    throw new MsGraphCli.Core.Exceptions.MsGraphCliException(
+                        $"Invalid value for --due: '{dueRaw}'. Expected a date like yyyy-MM-dd or ISO 8601.",
+                        "InvalidArgument", exitCode: 1);
+                }
+                dueDate = parsedDue;
+            }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             var request = new TodoTaskCreateRequest(
                 Title: title,
@@ -304,17 +312,15 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo update", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string listId = parseResult.GetValue(listIdArgument)!;
             string taskId = parseResult.GetValue(taskIdArgument)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "update", details = new { listId, taskId } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "update", details = new { listId, taskId } }, Console.Out);
                 }
                 else
                 {
@@ -324,9 +330,19 @@ public static class TasksCommands
             }
 
             string? dueRaw = parseResult.GetValue(dueOption);
-            DateTimeOffset? dueDate = dueRaw is not null
-                ? DateTimeOffset.Parse(dueRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
-                : null;
+            DateTimeOffset? dueDate = null;
+            if (dueRaw is not null)
+            {
+                if (!DateTimeOffset.TryParse(dueRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset parsedDue))
+                {
+                    throw new MsGraphCli.Core.Exceptions.MsGraphCliException(
+                        $"Invalid value for --due: '{dueRaw}'. Expected a date like yyyy-MM-dd or ISO 8601.",
+                        "InvalidArgument", exitCode: 1);
+                }
+                dueDate = parsedDue;
+            }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             var request = new TodoTaskUpdateRequest(
                 Title: parseResult.GetValue(titleOption),
@@ -366,17 +382,15 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo done", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string listId = parseResult.GetValue(listIdArgument)!;
             string taskId = parseResult.GetValue(taskIdArgument)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "done", details = new { listId, taskId } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "done", details = new { listId, taskId } }, Console.Out);
                 }
                 else
                 {
@@ -384,6 +398,8 @@ public static class TasksCommands
                 }
                 return;
             }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             TodoTaskItem updated = await service.SetTaskStatusAsync(listId, taskId, completed: true, cancellationToken);
 
@@ -416,17 +432,15 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo undo", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string listId = parseResult.GetValue(listIdArgument)!;
             string taskId = parseResult.GetValue(taskIdArgument)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "undo", details = new { listId, taskId } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "undo", details = new { listId, taskId } }, Console.Out);
                 }
                 else
                 {
@@ -434,6 +448,8 @@ public static class TasksCommands
                 }
                 return;
             }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             TodoTaskItem updated = await service.SetTaskStatusAsync(listId, taskId, completed: false, cancellationToken);
 
@@ -466,17 +482,15 @@ public static class TasksCommands
         {
             CommandGuard.EnforceReadOnly("todo delete", parseResult.GetValue(global.ReadOnly));
 
-            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
-
             string listId = parseResult.GetValue(listIdArgument)!;
             string taskId = parseResult.GetValue(taskIdArgument)!;
 
             if (parseResult.GetValue(global.DryRun))
             {
-                bool isJsonDry = parseResult.GetValue(global.Json);
-                if (isJsonDry)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
-                    formatter.WriteResult(new { dryRun = true, action = "delete", details = new { listId, taskId } }, Console.Out);
+                    dryFormatter.WriteResult(new { dryRun = true, action = "delete", details = new { listId, taskId } }, Console.Out);
                 }
                 else
                 {
@@ -484,6 +498,8 @@ public static class TasksCommands
                 }
                 return;
             }
+
+            var (service, formatter) = CreateServiceContext(parseResult, global, readOnly: false);
 
             await service.DeleteTaskAsync(listId, taskId, cancellationToken);
 

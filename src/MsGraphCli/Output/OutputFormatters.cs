@@ -279,17 +279,18 @@ public sealed class TableOutputFormatter : IOutputFormatter
         string type = item.IsFolder ? "folder" : item.MimeType ?? "file";
 
         string size;
-        if (item.IsFolder)
+        if (item.IsFolder || item.Size is null)
         {
             size = "—";
         }
         else
         {
-            size = item.Size switch
+            long sizeValue = item.Size.Value;
+            size = sizeValue switch
             {
-                >= 1024 * 1024 => $"{item.Size / (1024.0 * 1024.0):F1} MB",
-                >= 1024 => $"{item.Size / 1024.0:F1} KB",
-                _ => $"{item.Size?.ToString(CultureInfo.InvariantCulture) ?? "—"} B",
+                >= 1024 * 1024 => $"{sizeValue / (1024.0 * 1024.0):F1} MB",
+                >= 1024 => $"{sizeValue / 1024.0:F1} KB",
+                _ => $"{sizeValue.ToString(CultureInfo.InvariantCulture)} B",
             };
         }
 
@@ -305,6 +306,7 @@ public sealed class TableOutputFormatter : IOutputFormatter
         Console.WriteLine($"Modified:  {modified}");
         Console.WriteLine($"Path:      {item.ParentPath ?? "—"}");
         Console.WriteLine($"Web URL:   {item.WebUrl ?? "—"}");
+        Console.WriteLine($"Download:  {item.DownloadUrl ?? "—"}");
         Console.WriteLine($"ID:        {item.Id}");
     }
 

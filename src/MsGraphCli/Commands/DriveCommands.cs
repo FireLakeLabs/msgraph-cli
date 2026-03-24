@@ -253,9 +253,8 @@ public static class DriveCommands
 
             if (parseResult.GetValue(global.DryRun))
             {
-                var (_, dryFormatter) = CreateServiceContext(parseResult, global, readOnly: false);
-                bool isDryJson = parseResult.GetValue(global.Json);
-                if (isDryJson)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
                     dryFormatter.WriteResult(new { dryRun = true, action = "upload", details = new { localPath, remotePath } }, Console.Out);
                 }
@@ -304,9 +303,8 @@ public static class DriveCommands
 
             if (parseResult.GetValue(global.DryRun))
             {
-                var (_, dryFormatter) = CreateServiceContext(parseResult, global, readOnly: false);
-                bool isDryJson = parseResult.GetValue(global.Json);
-                if (isDryJson)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
                     dryFormatter.WriteResult(new { dryRun = true, action = "mkdir", details = new { name, parentPath } }, Console.Out);
                 }
@@ -355,9 +353,8 @@ public static class DriveCommands
 
             if (parseResult.GetValue(global.DryRun))
             {
-                var (_, dryFormatter) = CreateServiceContext(parseResult, global, readOnly: false);
-                bool isDryJson = parseResult.GetValue(global.Json);
-                if (isDryJson)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
                     dryFormatter.WriteResult(new { dryRun = true, action = "move", details = new { itemId, destination } }, Console.Out);
                 }
@@ -406,9 +403,8 @@ public static class DriveCommands
 
             if (parseResult.GetValue(global.DryRun))
             {
-                var (_, dryFormatter) = CreateServiceContext(parseResult, global, readOnly: false);
-                bool isDryJson = parseResult.GetValue(global.Json);
-                if (isDryJson)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
                     dryFormatter.WriteResult(new { dryRun = true, action = "rename", details = new { itemId, newName } }, Console.Out);
                 }
@@ -454,9 +450,8 @@ public static class DriveCommands
 
             if (parseResult.GetValue(global.DryRun))
             {
-                var (_, dryFormatter) = CreateServiceContext(parseResult, global, readOnly: false);
-                bool isDryJson = parseResult.GetValue(global.Json);
-                if (isDryJson)
+                IOutputFormatter dryFormatter = OutputFormatResolver.Resolve(parseResult.GetValue(global.Json), parseResult.GetValue(global.Plain));
+                if (parseResult.GetValue(global.Json))
                 {
                     dryFormatter.WriteResult(new { dryRun = true, action = "delete", details = new { itemId } }, Console.Out);
                 }
