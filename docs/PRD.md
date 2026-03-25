@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | **Author** | Aaron (Fire Lake Labs) |
-| **Status** | Active — Phase 1 complete, Phases 2–5 in progress |
+| **Status** | Active — All phases (1–5) complete |
 | **Repository** | [FireLakeLabs/msgraph-cli](https://github.com/FireLakeLabs/msgraph-cli) |
 | **Target Platform** | .NET 10, Linux primary (cross-platform capable) |
 | **License** | MIT |
@@ -106,10 +106,13 @@ msgraph-cli/
 │   │   ├── Commands/
 │   │   │   ├── AuthCommands.cs        ✅ Phase 1
 │   │   │   ├── MailCommands.cs        ✅ Phase 1 (read), Phase 2 (write)
-│   │   │   ├── CalendarCommands.cs    ○ Phase 2
-│   │   │   ├── DriveCommands.cs       ○ Phase 3
-│   │   │   ├── TasksCommands.cs       ○ Phase 3
-│   │   │   └── OfficeDocsCommands.cs  ○ Phase 4
+│   │   │   ├── CalendarCommands.cs    ✅ Phase 2
+│   │   │   ├── DriveCommands.cs       ✅ Phase 3
+│   │   │   ├── TasksCommands.cs       ✅ Phase 3
+│   │   │   ├── ExcelCommands.cs       ✅ Phase 4
+│   │   │   ├── DocsCommands.cs        ✅ Phase 4
+│   │   │   ├── ConfigCommands.cs      ✅ Phase 5
+│   │   │   └── CompletionsCommands.cs ✅ Phase 5
 │   │   └── Output/
 │   │       └── OutputFormatters.cs    ✅ Phase 1
 │   │
@@ -126,31 +129,44 @@ msgraph-cli/
 │   │   │   └── MsGraphCliException.cs ✅ Phase 1
 │   │   ├── Graph/
 │   │   │   ├── GraphClientFactory.cs  ✅ Phase 1
-│   │   │   └── PaginationHelper.cs    ○ Phase 2
+│   │   │   ├── PaginationHelper.cs    ✅ Phase 2
+│   │   │   └── RetryHandler.cs        ✅ Phase 2
 │   │   ├── Models/
-│   │   │   ├── MailModels.cs          ✅ Phase 1
-│   │   │   ├── CalendarModels.cs      ○ Phase 2
-│   │   │   ├── DriveModels.cs         ○ Phase 3
-│   │   │   ├── TaskModels.cs          ○ Phase 3
-│   │   │   └── OfficeDocsModels.cs    ○ Phase 4
+│   │   │   ├── MailModels.cs          ✅ Phase 1 (read), Phase 2 (write)
+│   │   │   ├── CalendarModels.cs      ✅ Phase 2
+│   │   │   ├── DriveModels.cs         ✅ Phase 3
+│   │   │   ├── TaskModels.cs          ✅ Phase 3
+│   │   │   ├── ExcelModels.cs         ✅ Phase 4
+│   │   │   └── DocumentModels.cs      ✅ Phase 4
 │   │   └── Services/
 │   │       ├── MailService.cs         ✅ Phase 1 (read), Phase 2 (write)
-│   │       ├── CalendarService.cs     ○ Phase 2
-│   │       ├── DriveService.cs        ○ Phase 3
-│   │       ├── TasksService.cs        ○ Phase 3
-│   │       └── OfficeDocsService.cs   ○ Phase 4
+│   │       ├── CalendarService.cs     ✅ Phase 2
+│   │       ├── DriveService.cs        ✅ Phase 3
+│   │       ├── TasksService.cs        ✅ Phase 3
+│   │       ├── ExcelService.cs        ✅ Phase 4
+│   │       └── DocumentService.cs     ✅ Phase 4
 │   │
 │   └── MsGraphCli.Tests/
 │       ├── Unit/
-│       │   ├── ScopeRegistryTests.cs  ✅ Phase 1
-│       │   └── TokenCacheHelperTests.cs ✅ Phase 1
-│       └── Integration/
+│       │   ├── ScopeRegistryTests.cs    ✅ Phase 1
+│       │   ├── TokenCacheHelperTests.cs ✅ Phase 1
+│       │   ├── MailServiceTests.cs      ✅ Phase 2
+│       │   ├── CalendarServiceTests.cs  ✅ Phase 2
+│       │   ├── RetryHandlerTests.cs     ✅ Phase 2
+│       │   ├── CommandGuardTests.cs     ✅ Phase 2
+│       │   ├── DriveServiceTests.cs     ✅ Phase 3
+│       │   ├── TasksServiceTests.cs     ✅ Phase 3
+│       │   ├── ExcelServiceTests.cs     ✅ Phase 4
+│       │   └── DocumentServiceTests.cs  ✅ Phase 4
+│       └── Integration/               ✅ Phase 5 (8 test files, gated by MSGRAPH_LIVE=1)
 │
 ├── spike/                             ✅ Completed (MSAL + 1Password validated)
-├── AGENTS.md                          ✅ Phase 1
-├── CLAUDE.md                          ✅ Phase 1
-├── PRD.md                             ← This document
-└── README.md                          ✅ Phase 1
+├── docs/
+│   ├── PRD.md                         ← This document
+│   └── command-reference.md           ✅ Phase 5
+├── AGENTS.md                          ✅ Phase 1 (updated Phase 5)
+├── CLAUDE.md                          ✅ Phase 1 (updated Phase 5)
+└── README.md                          ✅ Phase 1 (updated Phase 5)
 ```
 
 ### 4.3 Key Design Decisions
@@ -231,9 +247,9 @@ The `--readonly` flag restricts to read scopes only. The `--services` flag reque
 
 ### 6.1 Mail (Outlook)
 
-**Status:** ✅ Read operations complete. ○ Write operations Phase 2.
+**Status:** ✅ Complete (read + write).
 
-#### Read Operations (✅ Implemented)
+#### Read Operations
 
 ```bash
 msgraph mail list [--folder inbox] [--max 25]
@@ -242,7 +258,7 @@ msgraph mail get <messageId> [--format summary|full]
 msgraph mail folders list
 ```
 
-#### Write Operations (○ Phase 2)
+#### Write Operations
 
 ```bash
 # Send
@@ -279,7 +295,7 @@ msgraph mail attachments <messageId> --download --out-dir ./attachments
 
 ### 6.2 Calendar
 
-**Status:** ○ Phase 2
+**Status:** ✅ Complete
 
 #### Read Operations
 
@@ -369,7 +385,7 @@ public record FreeBusySlot(DateTimeOffset Start, DateTimeOffset End, string Stat
 
 ### 6.3 OneDrive / Files
 
-**Status:** ○ Phase 3
+**Status:** ✅ Complete
 
 #### Read Operations
 
@@ -431,7 +447,7 @@ public record DriveItemDetail(
 
 ### 6.4 To Do / Tasks
 
-**Status:** ○ Phase 3
+**Status:** ✅ Complete
 
 ```bash
 # Task lists
@@ -471,7 +487,7 @@ public record TodoTask(
 
 ### 6.5 Office Documents (Excel, Word, PowerPoint)
 
-**Status:** ○ Phase 4
+**Status:** ✅ Complete
 
 Excel operations use sessionless mode (each request is independent).
 
@@ -633,67 +649,66 @@ Applied as System.CommandLine middleware. Commands not in the list return exit c
 - Unit tests (ScopeRegistry, TokenCacheHelper, InMemorySecretStore).
 - AGENTS.md, CLAUDE.md, README.md.
 
-### Phase 2: Mail Write + Calendar
+### Phase 2: Mail Write + Calendar — ✅ COMPLETE
 
-**Deliverables:**
+**Delivered:**
 
 Mail write commands:
-- [ ] `msgraph mail send` (plain text, HTML, attachments, CC/BCC)
-- [ ] `msgraph mail reply` / `reply-all` / `forward`
-- [ ] `msgraph mail move`
-- [ ] `msgraph mail mark-read` / `mark-unread`
-- [ ] `msgraph mail attachments` (list + download)
+- [x] `msgraph mail send` (plain text, HTML, attachments, CC/BCC)
+- [x] `msgraph mail reply` / `reply-all` / `forward`
+- [x] `msgraph mail move`
+- [x] `msgraph mail mark-read` / `mark-unread`
+- [x] `msgraph mail attachments` (list + download)
 
 Calendar commands (full CRUD):
-- [ ] `msgraph calendar list` (list calendars)
-- [ ] `msgraph calendar events` (with `--today`, `--week`, `--from`/`--to`)
-- [ ] `msgraph calendar get` / `search`
-- [ ] `msgraph calendar create` (attendees, location, all-day, recurrence)
-- [ ] `msgraph calendar update` / `delete`
-- [ ] `msgraph calendar respond` (accept/decline/tentative)
-- [ ] `msgraph calendar freebusy`
+- [x] `msgraph calendar list` (list calendars)
+- [x] `msgraph calendar events` (with `--today`, `--week`, `--from`/`--to`)
+- [x] `msgraph calendar get` / `search`
+- [x] `msgraph calendar create` (attendees, location, all-day, recurrence)
+- [x] `msgraph calendar update` / `delete`
+- [x] `msgraph calendar respond` (accept/decline/tentative)
+- [x] `msgraph calendar freebusy`
 
 Cross-cutting:
-- [ ] `--readonly` enforcement middleware
-- [ ] `--enable-commands` allowlist middleware
-- [ ] Rate-limit retry handler (429 + exponential backoff)
-- [ ] `PaginationHelper` for multi-page responses
-- [ ] Add `Mail.Send` and `Mail.ReadWrite` to ScopeRegistry
-- [ ] Add `Calendars.Read` and `Calendars.ReadWrite` to ScopeRegistry
+- [x] `--readonly` enforcement middleware
+- [x] `--enable-commands` allowlist middleware
+- [x] Rate-limit retry handler (429 + exponential backoff)
+- [x] `PaginationHelper` for multi-page responses
+- [x] Add `Mail.Send` and `Mail.ReadWrite` to ScopeRegistry
+- [x] Add `Calendars.Read` and `Calendars.ReadWrite` to ScopeRegistry
 
 Testing:
-- [ ] Unit tests for CalendarService with mocked Graph client
-- [ ] Unit tests for mail write operations
-- [ ] Unit tests for command allowlist middleware
-- [ ] Integration tests for mail send (gated behind `MSGRAPH_LIVE=1`)
+- [x] Unit tests for CalendarService with mocked Graph client
+- [x] Unit tests for mail write operations
+- [x] Unit tests for command allowlist middleware
+- [x] Integration tests for mail send (gated behind `MSGRAPH_LIVE=1`)
 
-### Phase 3: OneDrive + Tasks
+### Phase 3: OneDrive + Tasks — ✅ COMPLETE
 
-**Deliverables:**
-- [ ] Full drive command set (ls, search, download, upload, mkdir, move, rename, delete)
-- [ ] Resumable upload for files > 4MB (auto-detected)
-- [ ] Full todo command set (lists, tasks CRUD, complete/uncomplete)
-- [ ] `--dry-run` flag for write operations
-- [ ] Unit tests for DriveService and TasksService
-- [ ] Integration tests (gated)
+**Delivered:**
+- [x] Full drive command set (ls, search, download, upload, mkdir, move, rename, delete)
+- [x] Resumable upload for files > 4MB (auto-detected)
+- [x] Full todo command set (lists, tasks CRUD, complete/uncomplete)
+- [x] `--dry-run` flag for write operations
+- [x] Unit tests for DriveService and TasksService
+- [x] Integration tests (gated)
 
-### Phase 4: Office Documents
+### Phase 4: Office Documents — ✅ COMPLETE
 
-**Deliverables:**
-- [ ] Excel: list worksheets, read ranges, update cells, append rows (sessionless)
-- [ ] Word/PowerPoint: export to PDF, text extraction
-- [ ] `--beta` flag wiring (swap Graph base URL per invocation)
-- [ ] Unit tests for OfficeDocsService
+**Delivered:**
+- [x] Excel: list worksheets, read ranges, update cells, append rows (sessionless)
+- [x] Word/PowerPoint: export to PDF, text extraction
+- [x] `--beta` flag wiring (swap Graph base URL per invocation)
+- [x] Unit tests for ExcelService and DocumentService
 
-### Phase 5: Polish
+### Phase 5: Polish — ✅ COMPLETE
 
-**Deliverables:**
-- [ ] Shell completions (bash, zsh, fish) via System.CommandLine built-in support
-- [ ] `msgraph config` command set (get, set, list, path)
-- [ ] Integration test suite (opt-in, live Graph API)
-- [ ] Full command reference documentation (generated or handwritten)
-- [ ] Self-contained binary publishing for linux-x64/arm64
-- [ ] Verification on `cheesy-mc-agent-host` or equivalent
+**Delivered:**
+- [x] Shell completions (bash, zsh, fish) via System.CommandLine built-in support
+- [x] `msgraph config` command set (get, set, list, path)
+- [x] Integration test suite (opt-in, live Graph API)
+- [x] Full command reference documentation
+- [x] Self-contained binary publishing for linux-x64/arm64
 
 ---
 

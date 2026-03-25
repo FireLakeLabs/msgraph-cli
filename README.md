@@ -6,14 +6,16 @@ Built for unattended agent use alongside interactive terminal access.
 
 ## Features
 
-- **Mail** — search, list, read messages and folders
-- **Calendar** — list, create, update events; check free/busy *(planned)*
-- **OneDrive** — list, search, upload, download files *(planned)*
-- **To Do** — manage task lists and tasks *(planned)*
-- **Excel / Word / PowerPoint** — read and export via Graph API *(planned)*
+- **Mail** — search, list, read, send, reply, forward, move, mark read/unread, attachments
+- **Calendar** — list calendars, CRUD events, respond to invitations, check free/busy
+- **OneDrive** — list, search, upload (resumable for >4MB), download, mkdir, move, rename, delete
+- **To Do** — manage task lists, CRUD tasks, mark complete/incomplete
+- **Excel** — list worksheets, read/update ranges, append table rows (sessionless)
+- **Word / PowerPoint** — export to PDF, extract text content
 - **Secure credential storage** — 1Password CLI integration, no secrets on disk
 - **Least-privilege auth** — request only the Graph scopes you need
-- **Agent-friendly** — JSON output, command allowlisting, structured exit codes
+- **Agent-friendly** — JSON output, command allowlisting, read-only mode, dry-run, structured exit codes
+- **Shell completions** — bash, zsh, fish
 
 ## Prerequisites
 
@@ -28,7 +30,15 @@ Built for unattended agent use alongside interactive terminal access.
 1. Go to [Azure Portal → App Registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade)
 2. **New registration** → Name: `msgraph-cli`, Single tenant, Redirect URI: `http://localhost` (Public client)
 3. Under **Authentication** → Enable **Allow public client flows**
-4. Under **API permissions** → Add: `User.Read`, `Mail.Read`, `offline_access`
+4. Under **API permissions** → Add the delegated permissions for the services you need:
+
+| Always Required | Mail | Calendar | OneDrive / Excel / Docs | To Do |
+|---|---|---|---|---|
+| `User.Read` | `Mail.Read` | `Calendars.Read` | `Files.Read` | `Tasks.Read` |
+| `offline_access` | `Mail.Send` | `Calendars.ReadWrite` | `Files.ReadWrite` | `Tasks.ReadWrite` |
+| | `Mail.ReadWrite` | | | |
+
+> **Tip:** Start with `User.Read`, `offline_access`, and the read scopes for the services you need. Add write scopes later with `msgraph auth login --services mail,calendar`.
 
 ### 2. Set Up 1Password
 
@@ -61,6 +71,15 @@ msgraph mail list --max 10
 
 # Search mail as JSON
 msgraph mail search "from:boss@company.com" --json
+
+# Today's calendar events
+msgraph calendar events --today --json
+
+# List OneDrive files
+msgraph drive ls --json
+
+# List To Do tasks
+msgraph todo lists --json
 
 # Check auth status
 msgraph auth status --json

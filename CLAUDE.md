@@ -37,6 +37,8 @@ Tests (MsGraphCli.Tests)   → xUnit, mocked Graph client and 1Password
 ```
 src/MsGraphCli/              CLI entry point
   Commands/                  System.CommandLine command definitions
+                             Auth, Mail, Calendar, Drive, Tasks, Excel, Docs, Config, Completions
+  Middleware/                 ActionRunner (exception handling), CommandGuard (readonly/allowlist)
   Output/                    IOutputFormatter implementations (JSON, table, plain)
   Program.cs                 Root command + global options
   GlobalOptions.cs           Shared option references
@@ -44,14 +46,16 @@ src/MsGraphCli/              CLI entry point
 src/MsGraphCli.Core/         Library (future NuGet extraction target)
   Auth/                      ISecretStore, OnePasswordSecretStore, GraphAuthProvider,
                              TokenCacheHelper, ScopeRegistry
-  Config/                    AppConfig, ConfigLoader
+  Config/                    AppConfig
   Exceptions/                Typed exceptions with exit codes
-  Graph/                     GraphClientFactory, MsalAccessTokenProvider
-  Models/                    Record DTOs (MailMessageSummary, etc.)
-  Services/                  IMailService, MailService, etc.
+  Graph/                     GraphClientFactory, MsalAccessTokenProvider,
+                             PaginationHelper, RetryHandler
+  Models/                    Record DTOs (Mail, Calendar, Drive, Task, Excel, Document models)
+  Services/                  MailService, CalendarService, DriveService, TasksService,
+                             ExcelService, DocumentService (all with interfaces)
 
 src/MsGraphCli.Tests/        Test project
-  Unit/                      Mocked tests
+  Unit/                      Mocked tests for all services + infrastructure
   Integration/               Live API tests (gated by MSGRAPH_LIVE=1)
 ```
 
