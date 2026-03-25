@@ -100,7 +100,7 @@ What's needed is a focused, security-first CLI that:
 ```
 msgraph-cli/
 ├── src/
-│   ├── MsGraphCli/                    # CLI entry point + commands
+│   ├── FireLakeLabs.MsGraphCli/                    # CLI entry point + commands
 │   │   ├── Program.cs
 │   │   ├── GlobalOptions.cs
 │   │   ├── Commands/
@@ -116,7 +116,7 @@ msgraph-cli/
 │   │   └── Output/
 │   │       └── OutputFormatters.cs    ✅ Phase 1
 │   │
-│   ├── MsGraphCli.Core/              # Library layer (future NuGet candidate)
+│   ├── FireLakeLabs.MsGraphCli.Core/              # Library layer (future NuGet candidate)
 │   │   ├── Auth/
 │   │   │   ├── ISecretStore.cs        ✅ Phase 1
 │   │   │   ├── OnePasswordSecretStore.cs ✅ Phase 1
@@ -146,7 +146,7 @@ msgraph-cli/
 │   │       ├── ExcelService.cs        ✅ Phase 4
 │   │       └── DocumentService.cs     ✅ Phase 4
 │   │
-│   └── MsGraphCli.Tests/
+│   └── FireLakeLabs.MsGraphCli.Tests/
 │       ├── Unit/
 │       │   ├── ScopeRegistryTests.cs    ✅ Phase 1
 │       │   ├── TokenCacheHelperTests.cs ✅ Phase 1

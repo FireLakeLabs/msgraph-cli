@@ -24,7 +24,7 @@
 
 set -euo pipefail
 
-DOTNET_RUN="dotnet run --project src/MsGraphCli --"
+DOTNET_RUN="dotnet run --project src/FireLakeLabs.MsGraphCli --"
 GLOBAL_FLAGS=""
 
 # ── Test file IDs — set these to known files in your OneDrive ──

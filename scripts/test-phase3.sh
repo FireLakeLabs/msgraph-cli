@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-DOTNET_RUN="dotnet run --project src/MsGraphCli --"
+DOTNET_RUN="dotnet run --project src/FireLakeLabs.MsGraphCli --"
 GLOBAL_FLAGS=""
 
 if [[ "${1:-}" == "--json" ]]; then

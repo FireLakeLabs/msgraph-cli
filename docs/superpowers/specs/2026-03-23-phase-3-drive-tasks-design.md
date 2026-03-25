@@ -174,23 +174,23 @@ New write commands added to read-only enforcement:
 ### New
 | File | Content |
 |---|---|
-| `src/MsGraphCli.Core/Models/DriveModels.cs` | DriveItemSummary, DriveItemDetail |
-| `src/MsGraphCli.Core/Models/TaskModels.cs` | TaskListInfo, TodoTaskItem, create/update requests |
-| `src/MsGraphCli.Core/Services/DriveService.cs` | IDriveService interface + DriveService implementation |
-| `src/MsGraphCli.Core/Services/TasksService.cs` | ITasksService interface + TasksService implementation |
-| `src/MsGraphCli/Commands/DriveCommands.cs` | All drive subcommands |
-| `src/MsGraphCli/Commands/TasksCommands.cs` | All todo subcommands |
-| `src/MsGraphCli.Tests/Unit/DriveServiceTests.cs` | Unit tests with MockGraphHandler |
-| `src/MsGraphCli.Tests/Unit/TasksServiceTests.cs` | Unit tests with MockGraphHandler |
+| `src/FireLakeLabs.MsGraphCli.Core/Models/DriveModels.cs` | DriveItemSummary, DriveItemDetail |
+| `src/FireLakeLabs.MsGraphCli.Core/Models/TaskModels.cs` | TaskListInfo, TodoTaskItem, create/update requests |
+| `src/FireLakeLabs.MsGraphCli.Core/Services/DriveService.cs` | IDriveService interface + DriveService implementation |
+| `src/FireLakeLabs.MsGraphCli.Core/Services/TasksService.cs` | ITasksService interface + TasksService implementation |
+| `src/FireLakeLabs.MsGraphCli/Commands/DriveCommands.cs` | All drive subcommands |
+| `src/FireLakeLabs.MsGraphCli/Commands/TasksCommands.cs` | All todo subcommands |
+| `src/FireLakeLabs.MsGraphCli.Tests/Unit/DriveServiceTests.cs` | Unit tests with MockGraphHandler |
+| `src/FireLakeLabs.MsGraphCli.Tests/Unit/TasksServiceTests.cs` | Unit tests with MockGraphHandler |
 
 ### Modified
 | File | Changes |
 |---|---|
-| `src/MsGraphCli/Program.cs` | Register drive + todo command groups |
-| `src/MsGraphCli/GlobalOptions.cs` | Add `DryRun` option |
-| `src/MsGraphCli/Output/OutputFormatters.cs` | Add WriteDriveItemTable, WriteDriveItemDetailTable, WriteTaskListTable, WriteTodoTaskTable |
-| `src/MsGraphCli/Middleware/CommandGuard.cs` | Extend WriteCommands set |
-| `src/MsGraphCli.Tests/Unit/CommandGuardTests.cs` | Add test cases for new write commands |
+| `src/FireLakeLabs.MsGraphCli/Program.cs` | Register drive + todo command groups |
+| `src/FireLakeLabs.MsGraphCli/GlobalOptions.cs` | Add `DryRun` option |
+| `src/FireLakeLabs.MsGraphCli/Output/OutputFormatters.cs` | Add WriteDriveItemTable, WriteDriveItemDetailTable, WriteTaskListTable, WriteTodoTaskTable |
+| `src/FireLakeLabs.MsGraphCli/Middleware/CommandGuard.cs` | Extend WriteCommands set |
+| `src/FireLakeLabs.MsGraphCli.Tests/Unit/CommandGuardTests.cs` | Add test cases for new write commands |
 
 ## Testing
 
@@ -203,5 +203,5 @@ New write commands added to read-only enforcement:
 
 1. `dotnet build` — zero warnings
 2. `dotnet test` — all tests pass
-3. Manual smoke test: `dotnet run --project src/MsGraphCli -- drive ls --json` (requires auth)
+3. Manual smoke test: `dotnet run --project src/FireLakeLabs.MsGraphCli -- drive ls --json` (requires auth)
 4. Verify `--dry-run` on a write command prints expected output without executing

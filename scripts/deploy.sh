@@ -31,7 +31,7 @@ echo ""
 
 # Step 1: Publish
 echo "--- Publishing for $RID ---"
-dotnet publish "$REPO_ROOT/src/MsGraphCli" \
+dotnet publish "$REPO_ROOT/src/FireLakeLabs.MsGraphCli" \
     -c Release \
     -r "$RID" \
     --self-contained \
