@@ -2,11 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsGraphCli", "src\MsGraphCli\MsGraphCli.csproj", "{A1B2C3D4-1111-2222-3333-444455556666}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FireLakeLabs.MsGraphCli", "src\FireLakeLabs.MsGraphCli\FireLakeLabs.MsGraphCli.csproj", "{A1B2C3D4-1111-2222-3333-444455556666}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsGraphCli.Core", "src\MsGraphCli.Core\MsGraphCli.Core.csproj", "{A1B2C3D4-1111-2222-3333-444455557777}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FireLakeLabs.MsGraphCli.Core", "src\FireLakeLabs.MsGraphCli.Core\FireLakeLabs.MsGraphCli.Core.csproj", "{A1B2C3D4-1111-2222-3333-444455557777}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsGraphCli.Tests", "src\MsGraphCli.Tests\MsGraphCli.Tests.csproj", "{A1B2C3D4-1111-2222-3333-444455558888}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FireLakeLabs.MsGraphCli.Tests", "src\FireLakeLabs.MsGraphCli.Tests\FireLakeLabs.MsGraphCli.Tests.csproj", "{A1B2C3D4-1111-2222-3333-444455558888}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E1E2E3E4-1111-2222-3333-444455559999}"
 EndProject

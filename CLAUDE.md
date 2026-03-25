@@ -14,12 +14,12 @@ dotnet build
 dotnet test
 
 # Run
-dotnet run --project src/MsGraphCli -- --help
-dotnet run --project src/MsGraphCli -- auth status --json
-dotnet run --project src/MsGraphCli -- mail list --json --max 10
+dotnet run --project src/FireLakeLabs.MsGraphCli -- --help
+dotnet run --project src/FireLakeLabs.MsGraphCli -- auth status --json
+dotnet run --project src/FireLakeLabs.MsGraphCli -- mail list --json --max 10
 
 # Publish single binary (linux-x64)
-dotnet publish src/MsGraphCli -c Release -r linux-x64 --self-contained -o ./publish
+dotnet publish src/FireLakeLabs.MsGraphCli -c Release -r linux-x64 --self-contained -o ./publish
 ```
 
 ## Architecture
@@ -27,15 +27,15 @@ dotnet publish src/MsGraphCli -c Release -r linux-x64 --self-contained -o ./publ
 Three-layer design. CLI depends on Core. Core has zero dependency on CLI.
 
 ```
-CLI (MsGraphCli)           → Thin shell: parse args, call service, format output
-Core (MsGraphCli.Core)     → All business logic: services, auth, Graph client, models
-Tests (MsGraphCli.Tests)   → xUnit, mocked Graph client and 1Password
+CLI (FireLakeLabs.MsGraphCli)           → Thin shell: parse args, call service, format output
+Core (FireLakeLabs.MsGraphCli.Core)     → All business logic: services, auth, Graph client, models
+Tests (FireLakeLabs.MsGraphCli.Tests)   → xUnit, mocked Graph client and 1Password
 ```
 
 ### Project Layout
 
 ```
-src/MsGraphCli/              CLI entry point
+src/FireLakeLabs.MsGraphCli/              CLI entry point
   Commands/                  System.CommandLine command definitions
                              Auth, Mail, Calendar, Drive, Tasks, Excel, Docs, Config, Completions
   Middleware/                 ActionRunner (exception handling), CommandGuard (readonly/allowlist)
@@ -43,7 +43,7 @@ src/MsGraphCli/              CLI entry point
   Program.cs                 Root command + global options
   GlobalOptions.cs           Shared option references
 
-src/MsGraphCli.Core/         Library (future NuGet extraction target)
+src/FireLakeLabs.MsGraphCli.Core/         Library (future NuGet extraction target)
   Auth/                      ISecretStore, OnePasswordSecretStore, GraphAuthProvider,
                              TokenCacheHelper, ScopeRegistry
   Config/                    AppConfig
@@ -54,7 +54,7 @@ src/MsGraphCli.Core/         Library (future NuGet extraction target)
   Services/                  MailService, CalendarService, DriveService, TasksService,
                              ExcelService, DocumentService (all with interfaces)
 
-src/MsGraphCli.Tests/        Test project
+src/FireLakeLabs.MsGraphCli.Tests/        Test project
   Unit/                      Mocked tests for all services + infrastructure
   Integration/               Live API tests (gated by MSGRAPH_LIVE=1)
 ```

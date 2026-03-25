@@ -17,13 +17,13 @@
 ### Task 1: Models
 
 **Files:**
-- Create: `src/MsGraphCli.Core/Models/DriveModels.cs`
-- Create: `src/MsGraphCli.Core/Models/TaskModels.cs`
+- Create: `src/FireLakeLabs.MsGraphCli.Core/Models/DriveModels.cs`
+- Create: `src/FireLakeLabs.MsGraphCli.Core/Models/TaskModels.cs`
 
 - [ ] **Step 1: Create DriveModels.cs**
 
 ```csharp
-namespace MsGraphCli.Core.Models;
+namespace FireLakeLabs.MsGraphCli.Core.Models;
 
 public record DriveItemSummary(
     string Id, string Name, string? MimeType, long? Size,
@@ -39,7 +39,7 @@ public record DriveItemDetail(
 - [ ] **Step 2: Create TaskModels.cs**
 
 ```csharp
-namespace MsGraphCli.Core.Models;
+namespace FireLakeLabs.MsGraphCli.Core.Models;
 
 public record TaskListInfo(string Id, string DisplayName, bool IsDefaultList);
 
@@ -70,7 +70,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/MsGraphCli.Core/Models/DriveModels.cs src/MsGraphCli.Core/Models/TaskModels.cs
+git add src/FireLakeLabs.MsGraphCli.Core/Models/DriveModels.cs src/FireLakeLabs.MsGraphCli.Core/Models/TaskModels.cs
 git commit -m "feat: Add Drive and Task model records for Phase 3"
 ```
 
@@ -79,9 +79,9 @@ git commit -m "feat: Add Drive and Task model records for Phase 3"
 ### Task 2: DriveService
 
 **Files:**
-- Create: `src/MsGraphCli.Core/Services/DriveService.cs`
-- Reference: `src/MsGraphCli.Core/Services/MailService.cs` (pattern to follow)
-- Reference: `src/MsGraphCli.Core/Services/CalendarService.cs` (pattern to follow)
+- Create: `src/FireLakeLabs.MsGraphCli.Core/Services/DriveService.cs`
+- Reference: `src/FireLakeLabs.MsGraphCli.Core/Services/MailService.cs` (pattern to follow)
+- Reference: `src/FireLakeLabs.MsGraphCli.Core/Services/CalendarService.cs` (pattern to follow)
 
 The service contains both the `IDriveService` interface and the `DriveService` implementation in the same file (matching existing pattern).
 
@@ -119,7 +119,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli.Core/Services/DriveService.cs
+git add src/FireLakeLabs.MsGraphCli.Core/Services/DriveService.cs
 git commit -m "feat: Add DriveService with OneDrive file operations"
 ```
 
@@ -128,7 +128,7 @@ git commit -m "feat: Add DriveService with OneDrive file operations"
 ### Task 3: TasksService
 
 **Files:**
-- Create: `src/MsGraphCli.Core/Services/TasksService.cs`
+- Create: `src/FireLakeLabs.MsGraphCli.Core/Services/TasksService.cs`
 
 The service contains both the `ITasksService` interface and the `TasksService` implementation.
 
@@ -166,7 +166,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli.Core/Services/TasksService.cs
+git add src/FireLakeLabs.MsGraphCli.Core/Services/TasksService.cs
 git commit -m "feat: Add TasksService with Microsoft To Do operations"
 ```
 
@@ -175,9 +175,9 @@ git commit -m "feat: Add TasksService with Microsoft To Do operations"
 ### Task 4: DriveServiceTests
 
 **Files:**
-- Create: `src/MsGraphCli.Tests/Unit/DriveServiceTests.cs`
-- Reference: `src/MsGraphCli.Tests/Unit/MailServiceTests.cs` (pattern to follow)
-- Reference: `src/MsGraphCli.Tests/Unit/Helpers/GraphMockHelper.cs`
+- Create: `src/FireLakeLabs.MsGraphCli.Tests/Unit/DriveServiceTests.cs`
+- Reference: `src/FireLakeLabs.MsGraphCli.Tests/Unit/MailServiceTests.cs` (pattern to follow)
+- Reference: `src/FireLakeLabs.MsGraphCli.Tests/Unit/Helpers/GraphMockHelper.cs`
 
 - [ ] **Step 1: Write DriveServiceTests**
 
@@ -232,7 +232,7 @@ Expected: All tests pass
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli.Tests/Unit/DriveServiceTests.cs
+git add src/FireLakeLabs.MsGraphCli.Tests/Unit/DriveServiceTests.cs
 git commit -m "test: Add DriveService unit tests"
 ```
 
@@ -241,7 +241,7 @@ git commit -m "test: Add DriveService unit tests"
 ### Task 5: TasksServiceTests
 
 **Files:**
-- Create: `src/MsGraphCli.Tests/Unit/TasksServiceTests.cs`
+- Create: `src/FireLakeLabs.MsGraphCli.Tests/Unit/TasksServiceTests.cs`
 
 - [ ] **Step 1: Write TasksServiceTests**
 
@@ -288,12 +288,12 @@ Expected: All tests pass
 
 - [ ] **Step 3: Create integration test placeholders**
 
-Create `src/MsGraphCli.Tests/Integration/DriveIntegrationTests.cs` and `src/MsGraphCli.Tests/Integration/TasksIntegrationTests.cs` following the existing pattern in `CalendarIntegrationTests.cs` — a single `[Fact(Skip = "...")]` placeholder method gated behind `MSGRAPH_LIVE=1`.
+Create `src/FireLakeLabs.MsGraphCli.Tests/Integration/DriveIntegrationTests.cs` and `src/FireLakeLabs.MsGraphCli.Tests/Integration/TasksIntegrationTests.cs` following the existing pattern in `CalendarIntegrationTests.cs` — a single `[Fact(Skip = "...")]` placeholder method gated behind `MSGRAPH_LIVE=1`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/MsGraphCli.Tests/Unit/TasksServiceTests.cs src/MsGraphCli.Tests/Integration/DriveIntegrationTests.cs src/MsGraphCli.Tests/Integration/TasksIntegrationTests.cs
+git add src/FireLakeLabs.MsGraphCli.Tests/Unit/TasksServiceTests.cs src/FireLakeLabs.MsGraphCli.Tests/Integration/DriveIntegrationTests.cs src/FireLakeLabs.MsGraphCli.Tests/Integration/TasksIntegrationTests.cs
 git commit -m "test: Add TasksService unit tests and integration test placeholders"
 ```
 
@@ -302,10 +302,10 @@ git commit -m "test: Add TasksService unit tests and integration test placeholde
 ### Task 6: Cross-cutting — GlobalOptions, CommandGuard, and tests
 
 **Files:**
-- Modify: `src/MsGraphCli/GlobalOptions.cs`
-- Modify: `src/MsGraphCli/Program.cs` (add --dry-run option registration)
-- Modify: `src/MsGraphCli/Middleware/CommandGuard.cs`
-- Modify: `src/MsGraphCli.Tests/Unit/CommandGuardTests.cs`
+- Modify: `src/FireLakeLabs.MsGraphCli/GlobalOptions.cs`
+- Modify: `src/FireLakeLabs.MsGraphCli/Program.cs` (add --dry-run option registration)
+- Modify: `src/FireLakeLabs.MsGraphCli/Middleware/CommandGuard.cs`
+- Modify: `src/FireLakeLabs.MsGraphCli.Tests/Unit/CommandGuardTests.cs`
 
 - [ ] **Step 1: Add DryRun to GlobalOptions**
 
@@ -393,7 +393,7 @@ Expected: All tests pass, 0 warnings
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/MsGraphCli/GlobalOptions.cs src/MsGraphCli/Program.cs src/MsGraphCli/Middleware/CommandGuard.cs src/MsGraphCli.Tests/Unit/CommandGuardTests.cs
+git add src/FireLakeLabs.MsGraphCli/GlobalOptions.cs src/FireLakeLabs.MsGraphCli/Program.cs src/FireLakeLabs.MsGraphCli/Middleware/CommandGuard.cs src/FireLakeLabs.MsGraphCli.Tests/Unit/CommandGuardTests.cs
 git commit -m "feat: Add --dry-run global option and extend CommandGuard for Phase 3 commands"
 ```
 
@@ -402,7 +402,7 @@ git commit -m "feat: Add --dry-run global option and extend CommandGuard for Pha
 ### Task 7: Output Formatters
 
 **Files:**
-- Modify: `src/MsGraphCli/Output/OutputFormatters.cs`
+- Modify: `src/FireLakeLabs.MsGraphCli/Output/OutputFormatters.cs`
 
 - [ ] **Step 1: Add table writer methods to TableOutputFormatter**
 
@@ -423,7 +423,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli/Output/OutputFormatters.cs
+git add src/FireLakeLabs.MsGraphCli/Output/OutputFormatters.cs
 git commit -m "feat: Add table formatters for Drive items and Todo tasks"
 ```
 
@@ -432,8 +432,8 @@ git commit -m "feat: Add table formatters for Drive items and Todo tasks"
 ### Task 8: DriveCommands
 
 **Files:**
-- Create: `src/MsGraphCli/Commands/DriveCommands.cs`
-- Reference: `src/MsGraphCli/Commands/CalendarCommands.cs` (pattern to follow)
+- Create: `src/FireLakeLabs.MsGraphCli/Commands/DriveCommands.cs`
+- Reference: `src/FireLakeLabs.MsGraphCli/Commands/CalendarCommands.cs` (pattern to follow)
 
 - [ ] **Step 1: Create DriveCommands.cs**
 
@@ -490,7 +490,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli/Commands/DriveCommands.cs
+git add src/FireLakeLabs.MsGraphCli/Commands/DriveCommands.cs
 git commit -m "feat: Add Drive CLI commands (ls, search, get, download, upload, mkdir, move, rename, delete)"
 ```
 
@@ -499,7 +499,7 @@ git commit -m "feat: Add Drive CLI commands (ls, search, get, download, upload, 
 ### Task 9: TasksCommands
 
 **Files:**
-- Create: `src/MsGraphCli/Commands/TasksCommands.cs`
+- Create: `src/FireLakeLabs.MsGraphCli/Commands/TasksCommands.cs`
 
 - [ ] **Step 1: Create TasksCommands.cs**
 
@@ -539,7 +539,7 @@ Expected: 0 warnings, 0 errors
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli/Commands/TasksCommands.cs
+git add src/FireLakeLabs.MsGraphCli/Commands/TasksCommands.cs
 git commit -m "feat: Add Todo CLI commands (lists, list, get, add, update, done, undo, delete)"
 ```
 
@@ -548,7 +548,7 @@ git commit -m "feat: Add Todo CLI commands (lists, list, get, add, update, done,
 ### Task 10: Register commands in Program.cs
 
 **Files:**
-- Modify: `src/MsGraphCli/Program.cs`
+- Modify: `src/FireLakeLabs.MsGraphCli/Program.cs`
 
 - [ ] **Step 1: Add drive and todo command registration**
 
@@ -567,7 +567,7 @@ Expected: 0 warnings, all tests pass
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/MsGraphCli/Program.cs
+git add src/FireLakeLabs.MsGraphCli/Program.cs
 git commit -m "feat: Register Drive and Todo commands in root command"
 ```
 
@@ -587,16 +587,16 @@ Expected: All tests pass (existing ~107 + new DriveServiceTests + TasksServiceTe
 
 - [ ] **Step 3: Verify CLI help output**
 
-Run: `dotnet run --project src/MsGraphCli -- --help`
+Run: `dotnet run --project src/FireLakeLabs.MsGraphCli -- --help`
 Expected: Shows `drive` and `todo` in command list
 
-Run: `dotnet run --project src/MsGraphCli -- drive --help`
+Run: `dotnet run --project src/FireLakeLabs.MsGraphCli -- drive --help`
 Expected: Shows all drive subcommands (ls, search, get, download, upload, mkdir, move, rename, delete)
 
-Run: `dotnet run --project src/MsGraphCli -- todo --help`
+Run: `dotnet run --project src/FireLakeLabs.MsGraphCli -- todo --help`
 Expected: Shows all todo subcommands (lists, list, get, add, update, done, undo, delete)
 
 - [ ] **Step 4: Verify --dry-run flag**
 
-Run: `dotnet run --project src/MsGraphCli -- --help`
+Run: `dotnet run --project src/FireLakeLabs.MsGraphCli -- --help`
 Expected: Shows `--dry-run` in global options

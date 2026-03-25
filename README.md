@@ -47,20 +47,20 @@ Built for unattended agent use alongside interactive terminal access.
 eval $(op signin)
 
 # Run setup (creates vault, stores client ID + tenant ID)
-dotnet run --project src/MsGraphCli -- auth setup
+dotnet run --project src/FireLakeLabs.MsGraphCli -- auth setup
 ```
 
 ### 3. Authenticate
 
 ```bash
 # Interactive browser login
-dotnet run --project src/MsGraphCli -- auth login
+dotnet run --project src/FireLakeLabs.MsGraphCli -- auth login
 
 # Headless (SSH, containers)
-dotnet run --project src/MsGraphCli -- auth login --device-code
+dotnet run --project src/FireLakeLabs.MsGraphCli -- auth login --device-code
 
 # Read-only, mail only
-dotnet run --project src/MsGraphCli -- auth login --services mail --readonly
+dotnet run --project src/FireLakeLabs.MsGraphCli -- auth login --services mail --readonly
 ```
 
 ### 4. Use It
@@ -92,7 +92,7 @@ dotnet build
 dotnet test
 
 # Publish self-contained binary
-dotnet publish src/MsGraphCli -c Release -r linux-x64 --self-contained -o ./publish
+dotnet publish src/FireLakeLabs.MsGraphCli -c Release -r linux-x64 --self-contained -o ./publish
 ```
 
 ## Agent Usage

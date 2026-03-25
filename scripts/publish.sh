@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-PROJECT="$REPO_ROOT/src/MsGraphCli"
+PROJECT="$REPO_ROOT/src/FireLakeLabs.MsGraphCli"
 PUBLISH_DIR="$REPO_ROOT/publish"
 
 TARGETS=("linux-x64" "linux-arm64")
